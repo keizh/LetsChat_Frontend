@@ -1,7 +1,10 @@
 import { createSlice } from "@reduxjs/toolkit";
 
 const initialState = {
+  ListOfChats: [],
   ActiveChat: false,
+  ActiveChatRoom: "",
+  ActiveChatMessages: [],
 };
 
 const ACTIVECHATslice = createSlice({

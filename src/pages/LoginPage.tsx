@@ -22,7 +22,7 @@ export default function LoginPage() {
         <Button
           onClick={() => {
             window.location.href = `${
-              import.meta.env.VITE_FRONTEND_URL
+              import.meta.env.VITE_BACKEND_URL
             }/user/google/oath`;
           }}
           size="lg"

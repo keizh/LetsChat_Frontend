@@ -20,6 +20,9 @@ import LoginPage from "./pages/LoginPage.tsx";
 import RedirectPage from "./pages/RedirectPage.tsx";
 import ChatPage from "./pages/ChatPage.tsx";
 
+// action-creators / thunk-action-creator
+import { fetchFriends } from "./Features/ChatsANDContactslice.ts";
+
 const router = createBrowserRouter([
   {
     path: "/",
@@ -55,6 +58,10 @@ const router = createBrowserRouter([
             element: <ListOfChats />,
           },
           {
+            loader: (): null => {
+              store.dispatch(fetchFriends());
+              return null;
+            },
             path: "/user/auth/chat/contacts",
             element: <Contacts />,
           },
