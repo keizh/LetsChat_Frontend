@@ -12,10 +12,13 @@ import {
 // COMPONENTS
 import ReboundComp from "./components/ReboundComp.tsx";
 import AuthorizedRoute from "./components/AuthorizedRoute.tsx";
+import ListOfChats from "./components/ListOfChats.tsx";
+import Contacts from "./components/Contacts.tsx";
 
 // PAGES
 import LoginPage from "./pages/LoginPage.tsx";
 import RedirectPage from "./pages/RedirectPage.tsx";
+import ChatPage from "./pages/ChatPage.tsx";
 
 const router = createBrowserRouter([
   {
@@ -43,9 +46,19 @@ const router = createBrowserRouter([
         path: "/user/auth/chat",
         element: (
           <AuthorizedRoute>
-            <div>you are on main chat</div>,
+            <ChatPage />
           </AuthorizedRoute>
         ),
+        children: [
+          {
+            index: true,
+            element: <ListOfChats />,
+          },
+          {
+            path: "/user/auth/chat/contacts",
+            element: <Contacts />,
+          },
+        ],
       },
     ],
   },
