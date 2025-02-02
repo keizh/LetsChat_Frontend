@@ -1,5 +1,6 @@
+/* eslint-disable react-refresh/only-export-components */
 import { useState, useRef, createContext, useContext, useEffect } from "react";
-
+import { AuxProps } from "../types";
 import useSelectorHook from "../customHooks/useSelectorHook";
 
 type WSContextType = {
@@ -12,7 +13,7 @@ export const WSContext = createContext<WSContextType | null>(null);
 
 export const useWSContext = () => useContext(WSContext);
 
-const WSContextComp = ({ children }) => {
+const WSContextComp = (Props: AuxProps) => {
   const maxAttempt = useRef<number>(5);
   const currentAttempt = useRef<number>(0);
   /* ⭐ The below var : logoutIntentionally
@@ -53,13 +54,13 @@ const WSContextComp = ({ children }) => {
     ws.current.onclose = () => {
       // ⚠️ onclose gets triggered due to connection failure or when .close is executed
       // is  logoutIntentionally = true , it is due to .close  , meaning intentional
-      if (logoutIntentionally) {
+      if (logoutIntentionally.current) {
         return;
       }
 
       //   connection retry logic
       if (currentAttempt.current < maxAttempt.current) {
-        let delay = Math.pow(2, currentAttempt.current);
+        const delay = Math.pow(2, currentAttempt.current) * 1000;
 
         setTimeout(() => {
           currentAttempt.current += 1;
@@ -91,7 +92,9 @@ const WSContextComp = ({ children }) => {
 
   const value = { ws, logoutHandler, attemptingToConnectState };
 
-  return <WSContext.Provider value={value}>{children}</WSContext.Provider>;
+  return (
+    <WSContext.Provider value={value}>{Props.children}</WSContext.Provider>
+  );
 };
 
 export default WSContextComp;

@@ -54,7 +54,7 @@ export default function ChatPage() {
                 navigate(`/user/auth/chat`);
               }}
             >
-              <span className=" relative text-3xl z-[10]">Home</span>
+              <span className=" relative text-3xl z-[10]">Chats</span>
               {activeIndex == 0 && (
                 <motion.div
                   className="z-[5] absolute inset-0 bg-red-100 bg-[#cfd8dc] rounded "
@@ -69,7 +69,7 @@ export default function ChatPage() {
                 navigate(`/user/auth/chat/contacts`);
               }}
             >
-              <span className="relative text-3xl z-[10]">About</span>
+              <span className="relative text-3xl z-[10]">Contacts</span>
               {activeIndex == 1 && (
                 <motion.div
                   className=" absolute inset-0 bg-red-100 bg-[#cfd8dc] rounded"

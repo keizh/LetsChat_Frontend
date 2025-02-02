@@ -62,7 +62,14 @@ const router = createBrowserRouter([
           },
           {
             loader: (): null => {
-              store.dispatch(fetchFriends());
+              console.log(`line 65`);
+              const {
+                CHATSANDCONTACT: { curPage, hasMore },
+              } = store.getState();
+              if (hasMore) {
+                store.dispatch(fetchFriends(curPage));
+              }
+              console.log(`line 67`);
               return null;
             },
             path: "/user/auth/chat/contacts",

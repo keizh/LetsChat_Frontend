@@ -1,7 +1,20 @@
-import { createSlice, createAsyncThunk, Action } from "@reduxjs/toolkit";
-import { act } from "react";
+import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
+import { contactsAPIOutputInterface, friendsInterface } from "../types";
 
-const initialState = {
+interface initialStateInterface {
+  ListOfFriends: friendsInterface[] | [];
+  ListOfSearchedFriends: friendsInterface[] | [];
+  curPage: number;
+  nextPage: number;
+  hasMore: boolean;
+  totalPages: number;
+  totalDocuments: number;
+  status: string; // loading , successfull , error
+  error: string;
+  whichTask: string;
+}
+
+const initialState: initialStateInterface = {
   ListOfFriends: [],
   ListOfSearchedFriends: [],
   curPage: 1,
@@ -14,29 +27,36 @@ const initialState = {
   whichTask: "",
 };
 
-export const fetchFriends = createAsyncThunk(
-  "FETCH/friends",
-  async (_, { rejectWithValue }) => {
-    try {
-      const res = await fetch(
-        `${import.meta.env.VITE_BACKEND_URL}/chat/contacts`,
-        {
-          method: "GET",
-          headers: {
-            Authorization: `${localStorage.getItem(`LetsChat`)}`,
-          },
-        }
-      );
-      const resData = await res.json();
-      if (!res.ok) {
-        throw new Error(`Failed to Fetch Contacts`);
-      }
-      return resData;
-    } catch (err) {
-      return rejectWithValue(err instanceof Error ? err.message : "");
-    }
+export const fetchFriends = createAsyncThunk<
+  contactsAPIOutputInterface,
+  number,
+  {
+    rejectValue: string;
   }
-);
+>("FETCH/friends", async (page, { rejectWithValue }) => {
+  // console.log(`line 20`);
+  try {
+    const res = await fetch(
+      `${import.meta.env.VITE_BACKEND_URL}/chat/contacts?page=${page}`,
+      {
+        method: "GET",
+        headers: {
+          Authorization: `${localStorage.getItem(`LetsChat`)}`,
+        },
+      }
+    );
+    // console.log(`line 31`);
+    const resData = await res.json();
+    if (!res.ok) {
+      // console.log(`line 34`);
+      throw new Error(`Failed to Fetch Contacts`);
+    }
+    return resData;
+  } catch (err) {
+    // console.log(`line 39`);
+    return rejectWithValue(err instanceof Error ? err.message : "");
+  }
+});
 
 export const fetchFriendsSearch = createAsyncThunk(
   "FETCH/seachedfriends",
@@ -77,7 +97,7 @@ const ChatsANDContactslice = createSlice({
       })
       .addCase(fetchFriends.fulfilled, (state, action) => {
         state.status = "successfull";
-        state.ListOfFriends = action.payload.data;
+        state.ListOfFriends = [...state.ListOfFriends, ...action.payload.data];
         state.curPage = action.payload.curPage;
         state.nextPage = action.payload.nextPage;
         state.hasMore = action.payload.hasMore;
@@ -118,4 +138,4 @@ const ChatsANDContactslice = createSlice({
 });
 
 export default ChatsANDContactslice.reducer;
-export const {} = ChatsANDContactslice.actions;
+// export const {} = ChatsANDContactslice.actions;
