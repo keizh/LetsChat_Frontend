@@ -12,6 +12,7 @@ export default function RedirectPage() {
       setQuery({});
       console.log(JWT);
       //   navigate to main chatting page from here
+      navigate("/user/auth/chat");
     }
   }, []);
   return (

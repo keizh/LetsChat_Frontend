@@ -14,6 +14,7 @@ import ReboundComp from "./components/ReboundComp.tsx";
 import AuthorizedRoute from "./components/AuthorizedRoute.tsx";
 import ListOfChats from "./components/ListOfChats.tsx";
 import Contacts from "./components/Contacts.tsx";
+import WSContextComp from "../src/contexts/WebSocketConnectionContext.tsx";
 
 // PAGES
 import LoginPage from "./pages/LoginPage.tsx";
@@ -49,7 +50,9 @@ const router = createBrowserRouter([
         path: "/user/auth/chat",
         element: (
           <AuthorizedRoute>
-            <ChatPage />
+            <WSContextComp>
+              <ChatPage />
+            </WSContextComp>
           </AuthorizedRoute>
         ),
         children: [
