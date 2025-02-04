@@ -20,3 +20,17 @@ export interface contactsAPIOutputInterface {
   hasMore: boolean;
   data: friendsInterface[];
 }
+
+export interface mssgInt {
+  type: "text" | "image" | "audio" | "video" | "pdf";
+  payload: string;
+  mssgId: string;
+  uploadTime: number;
+}
+
+export interface ONE2ONEResponseInterface {
+  participants: string[];
+  messages: mssgInt[] | [];
+  roomId: string;
+  _id: string;
+}

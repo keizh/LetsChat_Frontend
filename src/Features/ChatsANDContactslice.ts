@@ -12,6 +12,7 @@ interface initialStateInterface {
   status: string; // loading , successfull , error
   error: string;
   whichTask: string;
+  search: string;
 }
 
 const initialState: initialStateInterface = {
@@ -25,6 +26,7 @@ const initialState: initialStateInterface = {
   status: "idle", // loading , successfull , error
   error: "",
   whichTask: "",
+  search: "",
 };
 
 export const fetchFriends = createAsyncThunk<
@@ -58,7 +60,13 @@ export const fetchFriends = createAsyncThunk<
   }
 });
 
-export const fetchFriendsSearch = createAsyncThunk(
+export const fetchFriendsSearch = createAsyncThunk<
+  contactsAPIOutputInterface,
+  { search: string },
+  {
+    rejectValue: string;
+  }
+>(
   "FETCH/seachedfriends",
   async (data: { search: string }, { rejectWithValue }) => {
     const search: string = data?.search ?? "";
@@ -88,7 +96,11 @@ export const fetchFriendsSearch = createAsyncThunk(
 const ChatsANDContactslice = createSlice({
   name: "ChatsANDContactslice",
   initialState,
-  reducers: {},
+  reducers: {
+    setSearchSYNC: (state, action) => {
+      state.search = action.payload;
+    },
+  },
   extraReducers: (builder) => {
     builder
       .addCase(fetchFriends.pending, (state) => {
@@ -97,12 +109,15 @@ const ChatsANDContactslice = createSlice({
       })
       .addCase(fetchFriends.fulfilled, (state, action) => {
         state.status = "successfull";
-        state.ListOfFriends = [...state.ListOfFriends, ...action.payload.data];
         state.curPage = action.payload.curPage;
         state.nextPage = action.payload.nextPage;
         state.hasMore = action.payload.hasMore;
         state.totalPages = action.payload.totalPages;
         state.totalDocuments = action.payload.totalDocuments;
+        state.ListOfFriends = [
+          ...state.ListOfFriends,
+          ...action.payload.data,
+        ].slice(0, state.totalDocuments);
       })
       .addCase(
         fetchFriends.rejected,
@@ -122,7 +137,7 @@ const ChatsANDContactslice = createSlice({
       })
       .addCase(fetchFriendsSearch.fulfilled, (state, action) => {
         state.status = "successfull";
-        state.ListOfSearchedFriends = action.payload;
+        state.ListOfSearchedFriends = action.payload.data;
       })
       .addCase(
         fetchFriendsSearch.rejected,
@@ -138,4 +153,4 @@ const ChatsANDContactslice = createSlice({
 });
 
 export default ChatsANDContactslice.reducer;
-// export const {} = ChatsANDContactslice.actions;
+export const { setSearchSYNC } = ChatsANDContactslice.actions;
