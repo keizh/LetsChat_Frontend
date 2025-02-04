@@ -6,7 +6,7 @@ import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { Outlet, useNavigate, useLocation } from "react-router-dom";
 import ChatBox from "../components/ChatBox";
-
+import { useWSContext } from "../contexts/WebSocketConnectionContext";
 export default function ChatPage() {
   // console.log(`${Date.now()} re-renderd`);
   const location = useLocation();
@@ -16,7 +16,7 @@ export default function ChatPage() {
   const { ActiveChat } = useSelectorHook(`ACTIVECHAT`);
   const [activeIndex, setActiveIndex] = useState<number>(0);
   const navigate = useNavigate();
-
+  const { logoutHandler } = useWSContext();
   useEffect(() => {
     if (location.pathname == "/user/auth/chat/contacts") {
       setActiveIndex(1);
@@ -40,7 +40,16 @@ export default function ChatPage() {
           <div className="mt-2 flex gap-4 p-2 bg-black rounded-md">
             <Button color="amber">EDIT Profile</Button>
             <Button color="green">Create Group</Button>
-            <Button color="red">Log-Out</Button>
+            <Button
+              color="red"
+              onClick={() => {
+                localStorage.removeItem("LetsChat");
+                navigate("/user/login");
+                logoutHandler();
+              }}
+            >
+              Log-Out
+            </Button>
           </div>
         </div>
         {/* Bottom Section */}
@@ -86,11 +95,11 @@ true ? `block fixed inset-0 m-2  z-40` : `hidden`
 }   md:w-[65%] md:block md:m-0 absolute md:relative bg-[#eceff1] rounded-md  relative border border-black overflow-hidden`} */}
       <section
         className={`${
-          true ? `fixed inset-0 m-2  z-40` : `hidden`
+          ActiveChat ? `fixed inset-0 m-2  z-40` : `hidden sm:block`
         }   md:w-[65%]  md:m-0 absolute md:relative bg-[#eceff1] rounded-md  border border-black overflow-hidden`}
       >
         {/* BACKGROUND SVG */}
-        {!true && (
+        {!ActiveChat && (
           <div className="absolute z-[10] top-[50%] left-[50%] flex flex-col items-center gap-2 -translate-y-1/2 -translate-x-1/2">
             <div>
               <svg
@@ -108,7 +117,7 @@ true ? `block fixed inset-0 m-2  z-40` : `hidden`
           </div>
         )}
         {/* CHAT ACTIVE */}
-        {true && <ChatBox />}
+        {ActiveChat && <ChatBox />}
       </section>
     </div>
   );

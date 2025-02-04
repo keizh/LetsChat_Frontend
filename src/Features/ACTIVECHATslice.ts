@@ -9,6 +9,10 @@ const initialState: {
   ActiveChatMessages: mssgInt[];
   status: string;
   error: null | string;
+  activeChatloading: boolean;
+  activeChatEmail: string;
+  activeChatName: string;
+  activeChatProfileURL: string;
 } = {
   ListOfChats: [],
   ActiveChatId: "",
@@ -17,12 +21,18 @@ const initialState: {
   ActiveChatMessages: [],
   status: "idle", // "loading" , "successful" , "error" , "idle"
   error: null,
+  activeChatloading: false,
+  activeChatEmail: "",
+  activeChatName: "",
+  activeChatProfileURL: "",
 };
 
 export const fetchChatHistory = createAsyncThunk<
   { data: ONE2ONEResponseInterface },
   {
     participants: string[];
+    userIdOfClient: string;
+    userIdOfOppositeUser: string;
   },
   {
     rejectValue: string;
@@ -56,20 +66,27 @@ const ACTIVECHATslice = createSlice({
   name: "ACTIVECHATslice",
   initialState,
   reducers: {
-    setActiveChatBox: (state) => {
+    setActiveChatBox: (state, action) => {
       state.ActiveChat = true;
+      state.activeChatEmail = action.payload.email;
+      state.activeChatName = action.payload.name;
+      state.activeChatProfileURL = action.payload.prof;
     },
     setInActiveChatBox: (state) => {
       state.ActiveChat = false;
       state.ActiveChatRoom = "";
       state.ActiveChatId = "";
       state.ActiveChatMessages = [];
+      state.activeChatEmail = "";
+      state.activeChatName = "";
+      state.activeChatProfileURL = "";
     },
   },
   extraReducers: (builder) => {
     builder
       .addCase(fetchChatHistory.pending, (state) => {
         state.status = "loading";
+        state.activeChatloading = true;
       })
       .addCase(fetchChatHistory.fulfilled, (state, action) => {
         console.log(action.payload);
@@ -77,6 +94,7 @@ const ACTIVECHATslice = createSlice({
         state.ActiveChatMessages = action.payload.data.messages;
         state.ActiveChatRoom = action.payload.data.roomId;
         state.ActiveChatId = action.payload.data._id;
+        state.activeChatloading = false;
       })
       .addCase(
         fetchChatHistory.rejected,
@@ -88,6 +106,7 @@ const ACTIVECHATslice = createSlice({
         ) => {
           state.status = "error";
           state.error = action.payload;
+          state.activeChatloading = false;
         }
       );
   },

@@ -13,8 +13,20 @@ function Friends({ ele }: { ele: friendsInterface }) {
   const dispatch = useDispatchHook();
   const { userId } = useSelectorHook("USER");
   const openChatBox = () => {
-    dispatch(setActiveChatBox());
-    dispatch(fetchChatHistory({ participants: [userId, ele._id] }));
+    dispatch(
+      setActiveChatBox({
+        email: ele.email,
+        name: ele.name,
+        profileURL: ele.profileURL,
+      })
+    );
+    dispatch(
+      fetchChatHistory({
+        participants: [userId, ele._id],
+        userIdOfClient: userId,
+        userIdOfOppositeUser: ele._id,
+      })
+    );
     console.log(userId, ele._id);
   };
   return (
