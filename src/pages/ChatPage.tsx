@@ -1,22 +1,34 @@
 /* eslint-disable no-constant-binary-expression */
 /* eslint-disable no-constant-condition */
 import useSelectorHook from "../customHooks/useSelectorHook";
-import { Avatar, Typography, Button } from "@material-tailwind/react";
+import {
+  Avatar,
+  Typography,
+  Button,
+  Dialog,
+  DialogBody,
+  DialogFooter,
+} from "@material-tailwind/react";
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { Outlet, useNavigate, useLocation } from "react-router-dom";
 import ChatBox from "../components/ChatBox";
 import { useWSContext } from "../contexts/WebSocketConnectionContext";
+import { setdontJumpToNextChatWithoutLeaveingCurrentChatFALSE } from "../Features/ACTIVECHATslice";
+import useDispatchHook from "../customHooks/useDispatchHook";
 export default function ChatPage() {
+  const dispatch = useDispatchHook();
   // console.log(`${Date.now()} re-renderd`);
   const location = useLocation();
   // console.log(`PathNamr`, location.pathname);
 
   const { userName, userEmail, userProfileURL } = useSelectorHook(`USER`);
-  const { ActiveChat } = useSelectorHook(`ACTIVECHAT`);
+  const { ActiveChat, dontJumpToNextChatWithoutLeaveingCurrentChat } =
+    useSelectorHook(`ACTIVECHAT`);
   const [activeIndex, setActiveIndex] = useState<number>(0);
   const navigate = useNavigate();
   const { logoutHandler } = useWSContext();
+
   useEffect(() => {
     if (location.pathname == "/user/auth/chat/contacts") {
       setActiveIndex(1);
@@ -119,6 +131,22 @@ true ? `block fixed inset-0 m-2  z-40` : `hidden`
         {/* CHAT ACTIVE */}
         {ActiveChat && <ChatBox />}
       </section>
+      {dontJumpToNextChatWithoutLeaveingCurrentChat && (
+        <Dialog open={dontJumpToNextChatWithoutLeaveingCurrentChat}>
+          <DialogBody>click EXIT CHAT and then move on to next chat</DialogBody>
+          <DialogFooter>
+            <Button
+              variant="gradient"
+              color="green"
+              onClick={() =>
+                dispatch(setdontJumpToNextChatWithoutLeaveingCurrentChatFALSE())
+              }
+            >
+              <span>Confirm</span>
+            </Button>
+          </DialogFooter>
+        </Dialog>
+      )}
     </div>
   );
 }

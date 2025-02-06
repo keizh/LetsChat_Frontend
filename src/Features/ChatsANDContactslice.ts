@@ -1,5 +1,10 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
-import { contactsAPIOutputInterface, friendsInterface } from "../types";
+import {
+  contactsAPIOutputInterface,
+  friendsInterface,
+  ActiveChatInterface,
+} from "../types";
+import store from "../APP/store";
 
 interface initialStateInterface {
   ListOfFriends: friendsInterface[] | [];
@@ -13,9 +18,18 @@ interface initialStateInterface {
   error: string;
   whichTask: string;
   search: string;
+  ListOfActiveChats: ActiveChatInterface[] | [];
+  fetchActiveChatsRetry: number;
 }
 
 const initialState: initialStateInterface = {
+  status: "idle", // loading , successfull , error
+  error: "",
+  whichTask: "",
+  search: "",
+  fetchActiveChatsRetry: 0,
+
+  // Contact related stuff
   ListOfFriends: [],
   ListOfSearchedFriends: [],
   curPage: 1,
@@ -23,10 +37,9 @@ const initialState: initialStateInterface = {
   hasMore: true,
   totalPages: 1,
   totalDocuments: 1,
-  status: "idle", // loading , successfull , error
-  error: "",
-  whichTask: "",
-  search: "",
+
+  // Active Chat relates stuff
+  ListOfActiveChats: [],
 };
 
 export const fetchFriends = createAsyncThunk<
@@ -93,6 +106,35 @@ export const fetchFriendsSearch = createAsyncThunk<
   }
 );
 
+export const fetchActiveChats = createAsyncThunk<
+  ActiveChatInterface[],
+  {},
+  {
+    rejectValue: string;
+  }
+>("FETCH/ActiveChats", async (_, { rejectWithValue }) => {
+  try {
+    const res = await fetch(
+      `${import.meta.env.VITE_BACKEND_URL}/chat/activeChats`,
+      {
+        method: "GET",
+        headers: {
+          Authorization: `${localStorage.getItem(`LetsChat`)}`,
+        },
+      }
+    );
+    const resData = await res.json();
+    if (!res.ok) {
+      throw new Error(resData.message);
+    }
+    return resData.data;
+  } catch (err) {
+    const mssg =
+      err instanceof Error ? err.message : "Failed To fetch Active Chats";
+    return rejectWithValue(mssg);
+  }
+});
+
 const ChatsANDContactslice = createSlice({
   name: "ChatsANDContactslice",
   initialState,
@@ -143,10 +185,37 @@ const ChatsANDContactslice = createSlice({
         fetchFriendsSearch.rejected,
         (
           state,
-          action: ReturnType<typeof fetchFriends.rejected> & { payload: string }
+          action: ReturnType<typeof fetchFriendsSearch.rejected> & {
+            payload: string;
+          }
         ) => {
           state.status = "rejected";
           state.error = action?.payload || "";
+        }
+      );
+
+    builder
+      .addCase(fetchActiveChats.pending, (state) => {
+        state.status = "loading";
+        state.whichTask = "fetchActiveChats";
+      })
+      .addCase(fetchActiveChats.fulfilled, (state, action) => {
+        state.status = "successfull";
+        state.ListOfActiveChats = action.payload;
+      })
+      .addCase(
+        fetchActiveChats.rejected,
+        (
+          state,
+          action: ReturnType<typeof fetchActiveChats.rejected> & {
+            payload: string;
+          }
+        ) => {
+          state.status = "rejected";
+          state.error = action?.payload || "";
+          if (state.fetchActiveChatsRetry < 3) {
+            store.dispatch(fetchActiveChats({}));
+          }
         }
       );
   },

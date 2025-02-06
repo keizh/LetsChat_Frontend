@@ -2,7 +2,7 @@ import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 import { ONE2ONEResponseInterface, mssgInt } from "../types";
 
 const initialState: {
-  ListOfChats: [];
+  // ListOfChats: [];
   ActiveChat: boolean;
   ActiveChatId: string;
   ActiveChatRoom: string;
@@ -13,8 +13,10 @@ const initialState: {
   activeChatEmail: string;
   activeChatName: string;
   activeChatProfileURL: string;
+  fileUploadLoadState: boolean;
+  dontJumpToNextChatWithoutLeaveingCurrentChat: boolean;
 } = {
-  ListOfChats: [],
+  // ListOfChats: [],
   ActiveChatId: "",
   ActiveChat: false,
   ActiveChatRoom: "",
@@ -25,6 +27,8 @@ const initialState: {
   activeChatEmail: "",
   activeChatName: "",
   activeChatProfileURL: "",
+  fileUploadLoadState: false,
+  dontJumpToNextChatWithoutLeaveingCurrentChat: false,
 };
 
 export const fetchChatHistory = createAsyncThunk<
@@ -62,6 +66,32 @@ export const fetchChatHistory = createAsyncThunk<
   }
 });
 
+export const postFiles = createAsyncThunk<
+  string,
+  {
+    FILES_FORMDATA: FormData;
+  },
+  { rejectValue: string }
+>("Post/files", async (data, { rejectWithValue }) => {
+  try {
+    const res = await fetch(`${import.meta.env.VITE_BACKEND_URL}/file`, {
+      method: "POST",
+      headers: {
+        Authorization: `${localStorage.getItem("LetsChat")}`,
+      },
+      body: data.FILES_FORMDATA,
+    });
+    const resData = await res.json();
+    if (!res.ok) {
+      throw new Error(`Failed to post files`);
+    }
+    return resData.message;
+  } catch (err: unknown) {
+    const mssg: string = err instanceof Error ? err.message : "";
+    rejectWithValue(mssg);
+  }
+});
+
 const ACTIVECHATslice = createSlice({
   name: "ACTIVECHATslice",
   initialState,
@@ -81,6 +111,21 @@ const ACTIVECHATslice = createSlice({
       state.activeChatName = "";
       state.activeChatProfileURL = "";
     },
+    addMessageRecieved: (state, action) => {
+      // active.payload is a array of messages
+      // in case of normal recieve message it will only have one element~arr[0]
+      console.log(`$$$$$->message added`);
+      state.ActiveChatMessages = [
+        ...action.payload,
+        ...state.ActiveChatMessages,
+      ];
+    },
+    setdontJumpToNextChatWithoutLeaveingCurrentChatTRUE: (state) => {
+      state.dontJumpToNextChatWithoutLeaveingCurrentChat = true;
+    },
+    setdontJumpToNextChatWithoutLeaveingCurrentChatFALSE: (state) => {
+      state.dontJumpToNextChatWithoutLeaveingCurrentChat = true;
+    },
   },
   extraReducers: (builder) => {
     builder
@@ -89,7 +134,7 @@ const ACTIVECHATslice = createSlice({
         state.activeChatloading = true;
       })
       .addCase(fetchChatHistory.fulfilled, (state, action) => {
-        console.log(action.payload);
+        console.log(`line 92`, action.payload);
         state.status = "successful";
         state.ActiveChatMessages = action.payload.data.messages;
         state.ActiveChatRoom = action.payload.data.roomId;
@@ -109,8 +154,37 @@ const ACTIVECHATslice = createSlice({
           state.activeChatloading = false;
         }
       );
+
+    builder
+      .addCase(postFiles.pending, (state) => {
+        state.status = "loading";
+        state.fileUploadLoadState = true;
+      })
+      .addCase(postFiles.fulfilled, (state) => {
+        state.status = "successful";
+        state.fileUploadLoadState = false;
+      })
+      .addCase(
+        postFiles.rejected,
+        (
+          state,
+          action: ReturnType<typeof postFiles.rejected> & {
+            payload: string;
+          }
+        ) => {
+          state.status = "error";
+          state.error = action.payload;
+          state.fileUploadLoadState = false;
+        }
+      );
   },
 });
 
 export default ACTIVECHATslice.reducer;
-export const { setActiveChatBox, setInActiveChatBox } = ACTIVECHATslice.actions;
+export const {
+  setActiveChatBox,
+  setInActiveChatBox,
+  addMessageRecieved,
+  setdontJumpToNextChatWithoutLeaveingCurrentChatTRUE,
+  setdontJumpToNextChatWithoutLeaveingCurrentChatFALSE,
+} = ACTIVECHATslice.actions;

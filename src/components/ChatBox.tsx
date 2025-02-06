@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Button,
   Avatar,
@@ -13,7 +13,12 @@ import useWindow from "../customHooks/useWindow";
 import useSelectorHook from "../customHooks/useSelectorHook";
 import useDispatchHook from "../customHooks/useDispatchHook";
 import { useWSContext } from "../contexts/WebSocketConnectionContext";
-import { setInActiveChatBox } from "../Features/ACTIVECHATslice";
+import {
+  setInActiveChatBox,
+  addMessageRecieved,
+  postFiles,
+} from "../Features/ACTIVECHATslice";
+import { setLastAccessToRoom } from "../Features/USERslice";
 
 function ChatBox() {
   const dispatch = useDispatchHook();
@@ -22,6 +27,7 @@ function ChatBox() {
   const dimention = useWindow();
   const [open, setOpen] = useState(false);
   const handleOpen = () => setOpen(!open);
+  //🌟 state from ACTIVECHAT  Slice
   const {
     activeChatloading,
     activeChatEmail,
@@ -29,13 +35,16 @@ function ChatBox() {
     activeChatProfileURL,
     ActiveChatId,
     ActiveChatMessages,
+    ActiveChatRoom,
+    fileUploadLoadState,
   } = useSelectorHook(`ACTIVECHAT`);
-  const { userId } = useSelectorHook(`USER`);
+  //🌟 state from USER Slice
+  const { userId, userName } = useSelectorHook(`USER`);
   const storeFile = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFiles([]);
     if (e.target.files) {
       const files: File[] = Array.from(e.target.files);
-      files.forEach((file: File) => {
+      files.forEach((file: File, index) => {
         const type = file.type.split("/")[1];
         const size = file.size;
         if (
@@ -46,23 +55,91 @@ function ChatBox() {
             type == "mp4") &&
           size < 4.2 * 1024 * 1024
         ) {
-          setFiles((files) => [...files, file]);
+          if (index <= 7) setFiles((files) => [...files, file]);
         }
       });
     }
   };
   const { ws } = useWSContext();
+  // EXIT HANDLER WORKING PERFECTLY
   const exitHandler = () => {
+    dispatch(setLastAccessToRoom(ActiveChatRoom));
     dispatch(setInActiveChatBox());
-    ws.current.send(
-      JSON.stringify({
-        type: "CLOSE/CHAT",
-        payload: {
-          userId: userId,
-        },
-      })
-    );
+    if (ws?.current != null) {
+      ws.current.send(
+        JSON.stringify({
+          type: "CLOSE/CHAT",
+          payload: {
+            userId: userId,
+          },
+        })
+      );
+    }
   };
+
+  // MESSAGE SENT SUCCESSFULLY
+  const sendMessageHandler = () => {
+    console.log(`clicked`);
+    if (ws?.current != null) {
+      ws?.current.send(
+        JSON.stringify({
+          type: "SEND/MESSAGE",
+          payload: {
+            userId: userId,
+            userName: userName,
+            roomId: ActiveChatRoom,
+            chatId: ActiveChatId,
+            message: text,
+          },
+        })
+      );
+      setText("");
+    } else {
+      console.error(`Failed to make socket connection`);
+    }
+  };
+
+  const sendFileHandler = () => {
+    console.log(`hit`);
+    const FILES_FORMDATA = new FormData();
+
+    files.forEach((file) => {
+      FILES_FORMDATA.append("fileInput", file);
+    });
+
+    FILES_FORMDATA.append("userId", `${userId}`);
+    FILES_FORMDATA.append("userName", `${userName}`);
+    FILES_FORMDATA.append("roomId", `${ActiveChatRoom}`);
+    FILES_FORMDATA.append("chatId", `${ActiveChatId}`);
+
+    console.log(JSON.stringify(FILES_FORMDATA));
+    console.log(FILES_FORMDATA);
+    for (const pair of FILES_FORMDATA.entries()) {
+      console.log(`${pair[0]} - ${pair[1]}`);
+    }
+    dispatch(postFiles({ FILES_FORMDATA }));
+    handleOpen();
+  };
+
+  useEffect(() => {
+    if (ws?.current != null) {
+      ws.current.onmessage = (event: MessageEvent) => {
+        const parse = JSON.parse(event.data as string);
+        const { type, payload } = parse;
+
+        if (type == "RECIEVE/MESSAGE") {
+          const { mssgData, roomId } = payload;
+          console.log(`RECIEVE/MESSAGE`, mssgData, roomId);
+          console.log(`roomId`, roomId, typeof roomId);
+          console.log(`ActiveChatRoom`, ActiveChatRoom, typeof ActiveChatRoom);
+          if (roomId == ActiveChatRoom) {
+            console.log(`same room`);
+            dispatch(addMessageRecieved(mssgData));
+          }
+        }
+      };
+    }
+  }, []);
 
   if (activeChatloading) {
     return (
@@ -126,11 +203,20 @@ function ChatBox() {
             />
           </div>
           <div className=" w-[100%] space-between sm:w-fit flex gap-2 ">
-            <Button fullWidth>SEND</Button>
+            <Button
+              disabled={!text}
+              color={text == "" ? "black" : "green"}
+              fullWidth
+              onClick={sendMessageHandler}
+            >
+              SEND
+            </Button>
 
             {ActiveChatMessages.length > 0 && (
               <Button
                 onClick={handleOpen}
+                loading={fileUploadLoadState}
+                disabled={fileUploadLoadState}
                 fullWidth
                 variant="gradient"
                 color="blue"
@@ -160,7 +246,7 @@ function ChatBox() {
           <DialogHeader>SEND</DialogHeader>
           <DialogBody>
             <Typography>
-              AUDIO , VIDEO , PDF , IMAGES <br /> (AT MAX 10 files : 4MB EACH)
+              AUDIO , VIDEO , PDF , IMAGES <br /> (AT MAX 8 files : 4MB EACH)
             </Typography>
             <input
               type="file"
@@ -200,7 +286,13 @@ function ChatBox() {
             >
               <span>Cancel</span>
             </Button>
-            <Button variant="gradient" color="green" onClick={handleOpen}>
+            <Button
+              loading={fileUploadLoadState}
+              disabled={fileUploadLoadState}
+              onClick={sendFileHandler}
+              variant="gradient"
+              color="green"
+            >
               <span>SEND</span>
             </Button>
           </DialogFooter>

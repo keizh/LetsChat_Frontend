@@ -4,12 +4,16 @@ import { AuxProps } from "../types";
 import useSelectorHook from "../customHooks/useSelectorHook";
 
 type WSContextType = {
-  ws: React.MutableRefObject<WebSocket | null>;
+  ws: React.MutableRefObject<WebSocket | null> | null;
   logoutHandler: () => void;
   attemptingToConnectState: boolean;
 };
 
-export const WSContext = createContext<WSContextType | null>(null);
+export const WSContext = createContext<WSContextType>({
+  ws: null,
+  logoutHandler: () => {},
+  attemptingToConnectState: false,
+});
 
 export const useWSContext = () => useContext(WSContext);
 

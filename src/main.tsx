@@ -22,7 +22,10 @@ import RedirectPage from "./pages/RedirectPage.tsx";
 import ChatPage from "./pages/ChatPage.tsx";
 
 // action-creators / thunk-action-creator
-import { fetchFriends } from "./Features/ChatsANDContactslice.ts";
+import {
+  fetchActiveChats,
+  fetchFriends,
+} from "./Features/ChatsANDContactslice.ts";
 
 const router = createBrowserRouter([
   {
@@ -48,6 +51,10 @@ const router = createBrowserRouter([
       },
       {
         path: "/user/auth/chat",
+        loader: (): null => {
+          store.dispatch(fetchUserActiveChatsLastAccessTime());
+          return null;
+        },
         element: (
           <AuthorizedRoute>
             <WSContextComp>
@@ -58,11 +65,20 @@ const router = createBrowserRouter([
         children: [
           {
             index: true,
+            loader: (): null => {
+              const {
+                CHATSANDCONTACT: { ListOfActiveChats },
+              } = store.getState();
+              if (ListOfActiveChats.length == 0) {
+                store.dispatch(fetchActiveChats({}));
+              }
+              return null;
+            },
             element: <ListOfChats />,
           },
           {
             loader: (): null => {
-              console.log(`line 65`);
+              // console.log(`line 65`);
               const {
                 CHATSANDCONTACT: { curPage, hasMore },
               } = store.getState();

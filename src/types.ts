@@ -34,3 +34,12 @@ export interface ONE2ONEResponseInterface {
   roomId: string;
   _id: string;
 }
+
+export interface ActiveChatInterface {
+  chatId: string;
+  chatName: string;
+  roomId: string;
+  lastUpdated: number;
+  profileURL: string;
+  otherUser: string;
+}
