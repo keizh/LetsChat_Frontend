@@ -10,6 +10,7 @@ import {
   DialogBody,
   DialogFooter,
 } from "@material-tailwind/react";
+import ChatPad from "../components/ChatPad";
 import useWindow from "../customHooks/useWindow";
 import useSelectorHook from "../customHooks/useSelectorHook";
 import useDispatchHook from "../customHooks/useDispatchHook";
