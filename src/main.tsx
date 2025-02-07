@@ -26,6 +26,7 @@ import {
   fetchActiveChats,
   fetchFriends,
 } from "./Features/ChatsANDContactslice.ts";
+import { fetchUserActiveChatsLastAccessTime } from "./Features/USERslice.ts";
 
 const router = createBrowserRouter([
   {
@@ -66,12 +67,12 @@ const router = createBrowserRouter([
           {
             index: true,
             loader: (): null => {
-              const {
-                CHATSANDCONTACT: { ListOfActiveChats },
-              } = store.getState();
-              if (ListOfActiveChats.length == 0) {
-                store.dispatch(fetchActiveChats({}));
-              }
+              // const {
+              // CHATSANDCONTACT: { ListOfActiveChats },
+              // } = store.getState();
+              // if (ListOfActiveChats.length == 0) {
+              store.dispatch(fetchActiveChats({}));
+              // }
               return null;
             },
             element: <ListOfChats />,
@@ -79,13 +80,11 @@ const router = createBrowserRouter([
           {
             loader: (): null => {
               // console.log(`line 65`);
-              const {
-                CHATSANDCONTACT: { curPage, hasMore },
-              } = store.getState();
-              if (hasMore) {
-                store.dispatch(fetchFriends(curPage));
-              }
-              console.log(`line 67`);
+              // const {
+              //   CHATSANDCONTACT: { curPage },
+              // } = store.getState();
+              store.dispatch(fetchFriends(1));
+              // console.log(`line 67`);
               return null;
             },
             path: "/user/auth/chat/contacts",

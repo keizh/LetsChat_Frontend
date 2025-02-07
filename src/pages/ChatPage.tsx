@@ -16,19 +16,23 @@ import ChatBox from "../components/ChatBox";
 import { useWSContext } from "../contexts/WebSocketConnectionContext";
 import { setdontJumpToNextChatWithoutLeaveingCurrentChatFALSE } from "../Features/ACTIVECHATslice";
 import useDispatchHook from "../customHooks/useDispatchHook";
+import ProfileImageUpdate from "../components/ProfileImageUpdate";
+import { setToggleUserProfileButton } from "../Features/USERslice";
+
 export default function ChatPage() {
   const dispatch = useDispatchHook();
   // console.log(`${Date.now()} re-renderd`);
   const location = useLocation();
   // console.log(`PathNamr`, location.pathname);
 
-  const { userName, userEmail, userProfileURL } = useSelectorHook(`USER`);
+  const { userName, userEmail, userProfileURL, edittingUserProfileURL } =
+    useSelectorHook(`USER`);
   const { ActiveChat, dontJumpToNextChatWithoutLeaveingCurrentChat } =
     useSelectorHook(`ACTIVECHAT`);
   const [activeIndex, setActiveIndex] = useState<number>(0);
   const navigate = useNavigate();
   const { logoutHandler } = useWSContext();
-
+  // const { ws, wsSET } = useWSContext();
   useEffect(() => {
     if (location.pathname == "/user/auth/chat/contacts") {
       setActiveIndex(1);
@@ -50,7 +54,13 @@ export default function ChatPage() {
             </div>
           </div>
           <div className="mt-2 flex gap-4 p-2 bg-black rounded-md">
-            <Button color="amber">EDIT Profile</Button>
+            <Button
+              color="amber"
+              onClick={() => dispatch(setToggleUserProfileButton())}
+              loading={edittingUserProfileURL}
+            >
+              EDIT Profile
+            </Button>
             <Button color="green">Create Group</Button>
             <Button
               color="red"
@@ -147,6 +157,7 @@ true ? `block fixed inset-0 m-2  z-40` : `hidden`
           </DialogFooter>
         </Dialog>
       )}
+      <ProfileImageUpdate />
     </div>
   );
 }

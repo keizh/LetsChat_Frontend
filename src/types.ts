@@ -41,5 +41,7 @@ export interface ActiveChatInterface {
   roomId: string;
   lastUpdated: number;
   profileURL: string;
-  otherUser: string;
+  lastMessageSender: string;
+  lastMessageTime: number;
+  USER_LAST_ACCESS_TIME: number;
 }

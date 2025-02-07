@@ -1,4 +1,5 @@
-import { useState, useEffect } from "react";
+/* eslint-disable react-hooks/exhaustive-deps */
+import { useState } from "react";
 import {
   Button,
   Avatar,
@@ -13,12 +14,9 @@ import useWindow from "../customHooks/useWindow";
 import useSelectorHook from "../customHooks/useSelectorHook";
 import useDispatchHook from "../customHooks/useDispatchHook";
 import { useWSContext } from "../contexts/WebSocketConnectionContext";
-import {
-  setInActiveChatBox,
-  addMessageRecieved,
-  postFiles,
-} from "../Features/ACTIVECHATslice";
-import { setLastAccessToRoom } from "../Features/USERslice";
+import { setInActiveChatBox, postFiles } from "../Features/ACTIVECHATslice";
+import { update_USER_LAST_ACCESS_TIME_ListOfFriends } from "../Features/ChatsANDContactslice";
+// import { setLastAccessToRoom } from "../Features/USERslice";
 
 function ChatBox() {
   const dispatch = useDispatchHook();
@@ -63,7 +61,19 @@ function ChatBox() {
   const { ws } = useWSContext();
   // EXIT HANDLER WORKING PERFECTLY
   const exitHandler = () => {
-    dispatch(setLastAccessToRoom(ActiveChatRoom));
+    // console.log(`clicked`);
+    const lastAccessMoment = Date.now();
+    // dispatch(setLastAccessToRoom(ActiveChatRoom));
+    // console.log(
+    //   `update_USER_LAST_ACCESS_TIME_ListOfFriends----> dispatched on clicking ext chat`
+    // );
+    dispatch(
+      update_USER_LAST_ACCESS_TIME_ListOfFriends({
+        roomId: ActiveChatRoom,
+        USER_LAST_ACCESS_TIME: lastAccessMoment,
+      })
+    );
+
     dispatch(setInActiveChatBox());
     if (ws?.current != null) {
       ws.current.send(
@@ -71,6 +81,7 @@ function ChatBox() {
           type: "CLOSE/CHAT",
           payload: {
             userId: userId,
+            lastAccessMoment,
           },
         })
       );
@@ -79,7 +90,7 @@ function ChatBox() {
 
   // MESSAGE SENT SUCCESSFULLY
   const sendMessageHandler = () => {
-    console.log(`clicked`);
+    // console.log(`clicked`);
     if (ws?.current != null) {
       ws?.current.send(
         JSON.stringify({
@@ -95,12 +106,12 @@ function ChatBox() {
       );
       setText("");
     } else {
-      console.error(`Failed to make socket connection`);
+      // console.error(`Failed to make socket connection`);
     }
   };
 
   const sendFileHandler = () => {
-    console.log(`hit`);
+    // console.log(`hit`);
     const FILES_FORMDATA = new FormData();
 
     files.forEach((file) => {
@@ -112,34 +123,58 @@ function ChatBox() {
     FILES_FORMDATA.append("roomId", `${ActiveChatRoom}`);
     FILES_FORMDATA.append("chatId", `${ActiveChatId}`);
 
-    console.log(JSON.stringify(FILES_FORMDATA));
-    console.log(FILES_FORMDATA);
-    for (const pair of FILES_FORMDATA.entries()) {
-      console.log(`${pair[0]} - ${pair[1]}`);
-    }
+    // console.log(JSON.stringify(FILES_FORMDATA));
+    // console.log(FILES_FORMDATA);
+    // for (const pair of FILES_FORMDATA.entries()) {
+    // console.log(`${pair[0]} - ${pair[1]}`);
+    // }
     dispatch(postFiles({ FILES_FORMDATA }));
     handleOpen();
   };
 
-  useEffect(() => {
-    if (ws?.current != null) {
-      ws.current.onmessage = (event: MessageEvent) => {
-        const parse = JSON.parse(event.data as string);
-        const { type, payload } = parse;
+  // useEffect(() => {
+  //   if (ws?.current != null) {
+  //     ws.current.onmessage = (event: MessageEvent) => {
+  //       const parse = JSON.parse(event.data as string);
+  //       const { type, payload } = parse;
 
-        if (type == "RECIEVE/MESSAGE") {
-          const { mssgData, roomId } = payload;
-          console.log(`RECIEVE/MESSAGE`, mssgData, roomId);
-          console.log(`roomId`, roomId, typeof roomId);
-          console.log(`ActiveChatRoom`, ActiveChatRoom, typeof ActiveChatRoom);
-          if (roomId == ActiveChatRoom) {
-            console.log(`same room`);
-            dispatch(addMessageRecieved(mssgData));
-          }
-        }
-      };
-    }
-  }, []);
+  //       if (type == "RECIEVE/MESSAGE") {
+  //         const { mssgData, roomId } = payload;
+  //         console.log(`RECIEVE/MESSAGE`, mssgData, roomId);
+  //         console.log(`roomId`, roomId, typeof roomId);
+  //         console.log(`ActiveChatRoom`, ActiveChatRoom, typeof ActiveChatRoom);
+  //         if (roomId == ActiveChatRoom) {
+  //           console.log(`same room`);
+  //           dispatch(addMessageRecieved(mssgData));
+  //         }
+  //       }
+  //     };
+  //   }
+
+  //   return () => {
+  //     if (ws?.current) {
+  //       ws.current.onmessage = (event: MessageEvent) => {
+  //         const parse = JSON.parse(event.data as string);
+  //         const { type, payload } = parse;
+
+  //         if (type == "RECIEVE/MESSAGE") {
+  //           const { mssgData, roomId } = payload;
+  //           console.log(`RECIEVE/MESSAGE`, mssgData, roomId);
+  //           console.log(`roomId`, roomId, typeof roomId);
+  //           console.log(
+  //             `ActiveChatRoom`,
+  //             ActiveChatRoom,
+  //             typeof ActiveChatRoom
+  //           );
+  //           if (roomId == ActiveChatRoom) {
+  //             console.log(`same room`);
+  //             dispatch(addMessageRecieved(mssgData));
+  //           }
+  //         }
+  //       };
+  //     }
+  //   };
+  // }, []);
 
   if (activeChatloading) {
     return (
@@ -197,6 +232,7 @@ function ChatBox() {
         <div className="h-[14%] bg-white sm:h-[8%] flex flex-col justify-center sm:flex-row items-center gap-1 px-2">
           <div className="w-[100%] sm:w-fit sm:flex-grow">
             <Input
+              value={text}
               onChange={(e) => setText(e.target.value)}
               label="text"
               className=""

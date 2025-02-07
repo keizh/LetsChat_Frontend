@@ -9,7 +9,7 @@ import {
 } from "../Features/ACTIVECHATslice";
 
 function Friends({ ele }: { ele: friendsInterface }) {
-  console.log(ele.name);
+  // console.log(ele.name);
   const dispatch = useDispatchHook();
   const { userId } = useSelectorHook("USER");
   const openChatBox = () => {
@@ -25,9 +25,10 @@ function Friends({ ele }: { ele: friendsInterface }) {
         participants: [userId, ele._id],
         userIdOfClient: userId,
         userIdOfOppositeUser: ele._id,
+        lastAccessMoment: Date.now(),
       })
     );
-    console.log(userId, ele._id);
+    // console.log(userId, ele._id);
   };
   return (
     <div

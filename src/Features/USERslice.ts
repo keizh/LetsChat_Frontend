@@ -42,6 +42,10 @@ const initialState: {
     | UserActiveChatsRoomLastAccessTimeOBJ[]
     | [];
   error: string;
+  // the below state will be responsible for opening the dialog box responsible for editting profile image
+  editUserProfileButton: boolean;
+  // the below state will be responsible for LOADING
+  edittingUserProfileURL: boolean;
 } = {
   status: "idle",
   userId: "",
@@ -51,7 +55,40 @@ const initialState: {
   lastOnline: 0,
   UserActiveChatsRoomLastAccessTime: [],
   error: "",
+  editUserProfileButton: false,
+  edittingUserProfileURL: false,
 };
+
+export const updateProfileURL = createAsyncThunk<
+  string,
+  {
+    FORMDATA: FormData;
+  },
+  {
+    rejectValue: string;
+  }
+>("POST/updateProfileURL", async (data, { rejectWithValue }) => {
+  try {
+    const res = await fetch(
+      `${import.meta.env.VITE_BACKEND_URL}/file/updateProfileURL`,
+      {
+        method: "POST",
+        headers: {
+          Authorization: `${localStorage.getItem("LetsChat")}`,
+        },
+        body: data.FORMDATA,
+      }
+    );
+    const resData = await res.json();
+    if (!res.ok) {
+      throw new Error(`Failed to Update Profile Image`);
+    }
+    return resData.data;
+  } catch (err) {
+    const mssg = err instanceof Error ? err.message : "Failed to Upload images";
+    rejectWithValue(mssg);
+  }
+});
 
 const USERslice = createSlice({
   name: "USERslice",
@@ -73,6 +110,9 @@ const USERslice = createSlice({
           }
           return ele;
         });
+    },
+    setToggleUserProfileButton: (state) => {
+      state.editUserProfileButton = state.editUserProfileButton ? false : true;
     },
   },
   extraReducers: (builder) => {
@@ -101,8 +141,33 @@ const USERslice = createSlice({
           state.error = action.payload;
         }
       );
+
+    builder
+      .addCase(updateProfileURL.pending, (state) => {
+        state.edittingUserProfileURL = true;
+      })
+      .addCase(updateProfileURL.fulfilled, (state, action) => {
+        state.edittingUserProfileURL = false;
+        state.userProfileURL = action.payload;
+      })
+      .addCase(
+        updateProfileURL.rejected,
+        (
+          state,
+          action: ReturnType<typeof updateProfileURL.rejected> & {
+            payload: string;
+          }
+        ) => {
+          state.status = "error";
+          state.error = action.payload;
+        }
+      );
   },
 });
 
 export default USERslice.reducer;
-export const { setUserDetailSYNC, setLastAccessToRoom } = USERslice.actions;
+export const {
+  setUserDetailSYNC,
+  setLastAccessToRoom,
+  setToggleUserProfileButton,
+} = USERslice.actions;

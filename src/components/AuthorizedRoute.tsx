@@ -5,7 +5,7 @@ import { setUserDetailSYNC } from "../Features/USERslice";
 
 // ⚠️ IF JWT is with valid timeFrame will navigate to actual page or else will present login page
 function AuthorizedRoute({ children }) {
-  console.log(`AuthorizedRoute`);
+  // console.log(`AuthorizedRoute`);
   const dispatch = useDispatch();
   const token: string | null = localStorage.getItem(`LetsChat`);
   // console.log(token);

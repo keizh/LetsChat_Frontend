@@ -10,7 +10,7 @@ export default function RedirectPage() {
     if (JWT) {
       localStorage.setItem("LetsChat", JWT);
       setQuery({});
-      console.log(JWT);
+      // console.log(JWT);
       //   navigate to main chatting page from here
       navigate("/user/auth/chat");
     }

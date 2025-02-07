@@ -142,6 +142,46 @@ const ChatsANDContactslice = createSlice({
     setSearchSYNC: (state, action) => {
       state.search = action.payload;
     },
+    addNewActiveChat: (state, action) => {
+      state.ListOfActiveChats = [action.payload, ...state.ListOfActiveChats];
+    },
+    updateActiveChatsArraay: (state, action) => {
+      const { roomId, lastUpdated, lastMessageSender, lastMessageTime } =
+        action.payload;
+
+      state.ListOfActiveChats = state.ListOfActiveChats.map((ele) =>
+        ele.roomId === roomId
+          ? {
+              ...ele,
+              lastUpdated,
+              lastMessageSender,
+              lastMessageTime,
+            }
+          : ele
+      );
+      state.ListOfActiveChats.sort(
+        (a, b) => b.lastMessageTime - a.lastMessageTime
+      );
+    },
+    // whenever you exit a chat update
+    // whenever you enter a chat
+    update_USER_LAST_ACCESS_TIME_ListOfFriends: (state, action) => {
+      const { roomId, USER_LAST_ACCESS_TIME } = action.payload;
+      state.ListOfActiveChats = state.ListOfActiveChats.map((ele) => {
+        if (ele.roomId == roomId) {
+          return {
+            ...ele,
+            USER_LAST_ACCESS_TIME,
+          };
+        }
+
+        return ele;
+      });
+      // console.log(
+      //   `AFTER update_USER_LAST_ACCESS_TIME_ListOfFriends ==>`,
+      //   state.ListOfActiveChats
+      // );
+    },
   },
   extraReducers: (builder) => {
     builder
@@ -156,10 +196,14 @@ const ChatsANDContactslice = createSlice({
         state.hasMore = action.payload.hasMore;
         state.totalPages = action.payload.totalPages;
         state.totalDocuments = action.payload.totalDocuments;
-        state.ListOfFriends = [
-          ...state.ListOfFriends,
-          ...action.payload.data,
-        ].slice(0, state.totalDocuments);
+        if (state.curPage == 1) {
+          state.ListOfFriends = [...action.payload.data];
+        } else {
+          state.ListOfFriends = [
+            ...state.ListOfFriends,
+            ...action.payload.data,
+          ].slice(0, state.totalDocuments);
+        }
       })
       .addCase(
         fetchFriends.rejected,
@@ -222,4 +266,9 @@ const ChatsANDContactslice = createSlice({
 });
 
 export default ChatsANDContactslice.reducer;
-export const { setSearchSYNC } = ChatsANDContactslice.actions;
+export const {
+  setSearchSYNC,
+  addNewActiveChat,
+  updateActiveChatsArraay,
+  update_USER_LAST_ACCESS_TIME_ListOfFriends,
+} = ChatsANDContactslice.actions;

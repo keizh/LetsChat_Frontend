@@ -10,7 +10,7 @@ import {
 } from "../Features/ChatsANDContactslice";
 import { Input } from "@material-tailwind/react";
 import { fetchFriends } from "../Features/ChatsANDContactslice";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import useDebounce from "../customHooks/useDebounce";
 
 function Contacts() {
@@ -26,6 +26,12 @@ function Contacts() {
   };
   // ⚠️ will debounce search result
   useDebounce(inputTXT, dispatchSearchFriends, 500);
+  useEffect(() => {
+    console.log(`list of contacts mounted`);
+    return () => {
+      console.log(`list of contacts unmounted`);
+    };
+  }, []);
   return (
     <>
       <div className="bg-white">

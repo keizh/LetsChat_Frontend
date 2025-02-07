@@ -3,7 +3,7 @@ import { Navigate } from "react-router-dom";
 
 // ⚠️ IF JWT is with valid timeFrame will navigate to actual page or else will present login page
 function ReboundComp({ children }) {
-  console.log(`ReboundComp`);
+  // console.log(`ReboundComp`);
   const token: string | null = localStorage.getItem(`LetsChat`);
   //   console.log(token);
   const decoded = token ? jwtDecode<JwtPayload>(token) : false;

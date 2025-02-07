@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
 import { Avatar, Typography, Chip } from "@material-tailwind/react";
-import { useWSContext } from "../contexts/WebSocketConnectionContext";
 import useDispatchHook from "../customHooks/useDispatchHook";
 import {
   setActiveChatBox,
@@ -9,35 +8,58 @@ import {
 } from "../Features/ACTIVECHATslice";
 import useSelectorHook from "../customHooks/useSelectorHook";
 import { ActiveChatInterface } from "../types";
+import { update_USER_LAST_ACCESS_TIME_ListOfFriends } from "../Features/ChatsANDContactslice";
 
 function ActiveChatRectangleTab({ ele }: { ele: ActiveChatInterface }) {
-  const [isAlert, setIsAlert] = useState<boolean>(false);
-  const { ws } = useWSContext();
   const dispatch = useDispatchHook();
   const { userId } = useSelectorHook("USER");
+  const [isAlert, setIsAlert] = useState<boolean>(
+    ele.lastMessageTime > ele.USER_LAST_ACCESS_TIME
+      ? ele.lastMessageSender != userId
+      : false
+  );
+  // console.log(
+  //   ele.lastMessageTime > ele.USER_LAST_ACCESS_TIME
+  //     ? ele.lastMessageSender != userId
+  //     : false
+  // );
+  // console.log(`isAlert`, isAlert);
   const { ActiveChat } = useSelectorHook("ACTIVECHAT");
 
   useEffect(() => {
-    if (ws?.current != null) {
-      console.log(`active listening to ws?.curren `);
-      ws.current.onmessage = (event: MessageEvent) => {
-        const parse = JSON.parse(event.data as string);
-        const { type, payload } = parse;
-        if (type == "Message/ALERT") {
-          console.log(`Message/ALERT -> hit`);
-          const { roomId } = payload;
-          if (ele.roomId == roomId) {
-            setIsAlert(true);
-          }
-        }
-      };
-    }
-  }, [ele.roomId, ws]);
+    const newAlertState =
+      ele.lastMessageTime > ele.USER_LAST_ACCESS_TIME &&
+      ele.lastMessageSender !== userId;
+    setIsAlert(newAlertState);
+  }, [
+    ele.lastMessageTime,
+    ele.USER_LAST_ACCESS_TIME,
+    ele.lastMessageSender,
+    userId,
+  ]);
+
+  // useEffect(() => {
+  //   if (ws?.current != null) {
+  //     ws.current.onmessage = (event: MessageEvent) => {
+  //       const parse = JSON.parse(event.data as string);
+  //       const { type, payload } = parse;
+  //       if (type == "Message/ALERT") {
+  //         console.log(`Message/ALERT -> hit`);
+  //         const { roomId } = payload;
+  //         if (ele.roomId == roomId) {
+  //           setIsAlert(true);
+  //         }
+  //       }
+  //     };
+  //   }
+  // }, [wsSET, ws, ele.roomId]);
 
   const onClickHandler = () => {
+    const lastAccessMoment = Date.now();
     if (!ActiveChat) {
       // mark alert to false
       setIsAlert(false);
+
       // chatID in case of group is chatId of group
       // in case of personal it is ~ userId of oppoiste user
       if (!ele.chatId.includes("GROUP")) {
@@ -50,13 +72,21 @@ function ActiveChatRectangleTab({ ele }: { ele: ActiveChatInterface }) {
             profileURL: ele.profileURL,
           })
         );
+        // fetch ONE2ONE chat history
+        // console.log(`lastAccessMoment 1 ⚠️`, lastAccessMoment);
         dispatch(
           fetchChatHistory({
             participants: [userId, ele.chatId],
             userIdOfClient: userId,
             userIdOfOppositeUser: ele.chatId,
+            lastAccessMoment,
           })
         );
+        // update last access time
+        // console.log(
+        //   `update_USER_LAST_ACCESS_TIME_ListOfFriends----> dispatched on clicking activeCHatRectangleTAB`
+        // );
+        // update_USER_LAST_ACCESS_TIME_ListOfFriends
       } else {
         dispatch(
           setActiveChatBox({
@@ -67,6 +97,13 @@ function ActiveChatRectangleTab({ ele }: { ele: ActiveChatInterface }) {
         );
         //   dispatch(DIFFERENT PROTOCOL TO FETCH GROUP CHAT);
       }
+      // console.log(`lastAccessMoment 2 ⚠️`, lastAccessMoment);
+      dispatch(
+        update_USER_LAST_ACCESS_TIME_ListOfFriends({
+          roomId: ele.roomId,
+          USER_LAST_ACCESS_TIME: lastAccessMoment,
+        })
+      );
     } else {
       dispatch(setdontJumpToNextChatWithoutLeaveingCurrentChatTRUE());
     }

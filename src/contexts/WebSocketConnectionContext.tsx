@@ -2,24 +2,34 @@
 import { useState, useRef, createContext, useContext, useEffect } from "react";
 import { AuxProps } from "../types";
 import useSelectorHook from "../customHooks/useSelectorHook";
-
+import useDispatchHook from "../customHooks/useDispatchHook";
+import {
+  addNewActiveChat,
+  updateActiveChatsArraay,
+} from "../Features/ChatsANDContactslice";
+import { addMessageRecieved } from "../Features/ACTIVECHATslice";
 type WSContextType = {
   ws: React.MutableRefObject<WebSocket | null> | null;
   logoutHandler: () => void;
   attemptingToConnectState: boolean;
+  wsSET: boolean;
 };
+import store from "../APP/store";
 
 export const WSContext = createContext<WSContextType>({
   ws: null,
   logoutHandler: () => {},
   attemptingToConnectState: false,
+  wsSET: false,
 });
 
 export const useWSContext = () => useContext(WSContext);
 
 const WSContextComp = (Props: AuxProps) => {
+  const dispatch = useDispatchHook();
   const maxAttempt = useRef<number>(5);
   const currentAttempt = useRef<number>(0);
+  const [wsSET, setWSSET] = useState<boolean>(false);
   /* ⭐ The below var : logoutIntentionally
   This variable is used to mark when when we click the logut button intentionally or 
   When we close the browser , the beforeunload is triggered
@@ -32,6 +42,8 @@ const WSContextComp = (Props: AuxProps) => {
   const ws = useRef<null | WebSocket>(null);
 
   const { userId } = useSelectorHook(`USER`);
+
+  const { ActiveChatRoom } = useSelectorHook(`ACTIVECHAT`);
 
   // ⭐ : USER CLICK LOGOUT HANDLER
   const logoutHandler = () => {
@@ -46,6 +58,10 @@ const WSContextComp = (Props: AuxProps) => {
 
   const connectionFunction = () => {
     ws.current = new WebSocket(import.meta.env.VITE_BACKEND_URL);
+
+    if (ws.current) {
+      setWSSET(true);
+    }
 
     ws.current.onopen = () => {
       currentAttempt.current = 0;
@@ -94,7 +110,69 @@ const WSContextComp = (Props: AuxProps) => {
     };
   }, []);
 
-  const value = { ws, logoutHandler, attemptingToConnectState };
+  useEffect(() => {
+    // console.log(`first mount`);
+    const handler = (event: MessageEvent) => {
+      const parse = JSON.parse(event.data as string);
+      const { type, payload } = parse;
+      // console.log(`ACTIVE/CHAT/ACTIVATION gonna be hit`);
+      // console.log(type, payload);
+
+      switch (type) {
+        case "ACTIVE/CHAT/ACTIVATION":
+          // console.log(`ACTIVE/CHAT/ACTIVATION hit`);
+          // console.log(`new chat`, payload);
+          dispatch(addNewActiveChat(payload));
+          break;
+
+        case "Message/ALERT":
+          // console.log(`Message/ALERT -> hit`);
+          // const { roomId, lastUpdated, lastMessageSender, lastMessageTime } =
+          //   payload;
+          dispatch(
+            updateActiveChatsArraay({
+              roomId: payload.roomId,
+              lastUpdated: payload.lastUpdated,
+              lastMessageSender: payload.lastMessageSender,
+              lastMessageTime: payload.lastMessageTime,
+            })
+          );
+          break;
+
+        case "RECEIVE/MESSAGE":
+          // const { mssgData, roomId } = payload;
+          // console.log(`RECIEVE/MESSAGE`, mssgData, roomId);
+          // console.log(`roomId`, roomId, typeof roomId);
+          console.log(`message reciveved , checking if roomId also matched`);
+          console.log(`payload.roomId`, payload.roomId);
+          console.log(
+            `ActiveChatRoom`,
+            store.getState().ACTIVECHAT.ActiveChatRoom
+          );
+          if (payload.roomId == store.getState().ACTIVECHAT.ActiveChatRoom) {
+            console.log(`message will get added`, payload.mssgData);
+            dispatch(addMessageRecieved(payload.mssgData));
+          }
+          break;
+
+        default:
+          console.log(`Unhandled message type: ${type}`);
+      }
+    };
+
+    if (ws?.current != null) {
+      // console.log(`second mount`);
+      ws.current.addEventListener("message", handler);
+    }
+    return () => {
+      if (ws?.current != null) {
+        ws.current.removeEventListener("message", handler);
+      }
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [ws, wsSET]);
+
+  const value = { ws, logoutHandler, attemptingToConnectState, wsSET };
 
   return (
     <WSContext.Provider value={value}>{Props.children}</WSContext.Provider>

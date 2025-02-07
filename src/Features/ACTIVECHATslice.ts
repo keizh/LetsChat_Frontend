@@ -37,6 +37,7 @@ export const fetchChatHistory = createAsyncThunk<
     participants: string[];
     userIdOfClient: string;
     userIdOfOppositeUser: string;
+    lastAccessMoment: number;
   },
   {
     rejectValue: string;
@@ -61,7 +62,7 @@ export const fetchChatHistory = createAsyncThunk<
     return resData;
   } catch (err: unknown) {
     const mssg: string = err instanceof Error ? err.message : "";
-    console.error(mssg);
+    // console.error(mssg);
     rejectWithValue(mssg);
   }
 });
@@ -103,28 +104,32 @@ const ACTIVECHATslice = createSlice({
       state.activeChatProfileURL = action.payload.prof;
     },
     setInActiveChatBox: (state) => {
-      state.ActiveChat = false;
-      state.ActiveChatRoom = "";
-      state.ActiveChatId = "";
-      state.ActiveChatMessages = [];
-      state.activeChatEmail = "";
-      state.activeChatName = "";
-      state.activeChatProfileURL = "";
+      return {
+        ...state,
+        ActiveChat: false,
+        ActiveChatRoom: "",
+        ActiveChatId: "",
+        ActiveChatMessages: [],
+        activeChatEmail: "",
+        activeChatName: "",
+        activeChatProfileURL: "",
+      };
     },
     addMessageRecieved: (state, action) => {
       // active.payload is a array of messages
       // in case of normal recieve message it will only have one element~arr[0]
-      console.log(`$$$$$->message added`);
+      // console.log(`$$$$$->message added`);
       state.ActiveChatMessages = [
         ...action.payload,
         ...state.ActiveChatMessages,
       ];
+      console.log(`message has been added`, state.ActiveChatMessages);
     },
     setdontJumpToNextChatWithoutLeaveingCurrentChatTRUE: (state) => {
       state.dontJumpToNextChatWithoutLeaveingCurrentChat = true;
     },
     setdontJumpToNextChatWithoutLeaveingCurrentChatFALSE: (state) => {
-      state.dontJumpToNextChatWithoutLeaveingCurrentChat = true;
+      state.dontJumpToNextChatWithoutLeaveingCurrentChat = false;
     },
   },
   extraReducers: (builder) => {
@@ -134,7 +139,7 @@ const ACTIVECHATslice = createSlice({
         state.activeChatloading = true;
       })
       .addCase(fetchChatHistory.fulfilled, (state, action) => {
-        console.log(`line 92`, action.payload);
+        // console.log(`line 92`, action.payload);
         state.status = "successful";
         state.ActiveChatMessages = action.payload.data.messages;
         state.ActiveChatRoom = action.payload.data.roomId;
