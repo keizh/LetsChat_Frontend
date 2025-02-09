@@ -3,11 +3,29 @@ import moment from "moment";
 import { mssgInt } from "../types";
 import { Button } from "@material-tailwind/react";
 import { memo } from "react";
+import {
+  deleteMessageSYNC,
+  deleteMessageASYNC,
+} from "../Features/ACTIVECHATslice";
 
 function TextCOMP({ ele }: { ele: mssgInt }) {
   const momentObj = moment(ele.uploadTime);
   const formattedDate = momentObj.format("MMMM Do YYYY, h:mm:ss a");
   const userId = store.getState().USER.userId;
+  const deleteHandler = () => {
+    store.dispatch(
+      deleteMessageSYNC({
+        mssgId: ele.mssgId,
+        chatId: store.getState().ACTIVECHAT.ActiveChatId,
+      })
+    );
+    store.dispatch(
+      deleteMessageASYNC({
+        mssgId: ele.mssgId,
+        chatId: store.getState().ACTIVECHAT.ActiveChatId,
+      })
+    );
+  };
   return (
     <div className="min-h-[5vh] flex p-2 ">
       <div
@@ -20,7 +38,7 @@ function TextCOMP({ ele }: { ele: mssgInt }) {
         <p>{ele.payload}</p>
         <p className="p-2 rounded bg-white text-red-400">{formattedDate}</p>
         {ele.deleteState && ele.senderId == store.getState().USER.userId && (
-          <Button fullWidth color="red" size="sm">
+          <Button onClick={deleteHandler} fullWidth color="red" size="sm">
             DELETE
           </Button>
         )}

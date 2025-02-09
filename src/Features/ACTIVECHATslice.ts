@@ -1,5 +1,6 @@
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 import { ONE2ONEResponseInterface, mssgInt } from "../types";
+import store from "../APP/store";
 
 const initialState: {
   // ListOfChats: [];
@@ -64,7 +65,7 @@ export const fetchChatHistory = createAsyncThunk<
   {
     rejectValue: string;
   }
->("fetch/Chat", async (data, { _, rejectWithValue }) => {
+>("fetch/Chat", async (data, { rejectWithValue }) => {
   try {
     const res = await fetch(
       `${import.meta.env.VITE_BACKEND_URL}/chat/ONE2ONE`,
@@ -115,6 +116,40 @@ export const postFiles = createAsyncThunk<
   }
 });
 
+export const deleteMessageASYNC = createAsyncThunk<
+  string,
+  {
+    mssgId: string;
+    chatId: string;
+  },
+  { rejectValue: string }
+>("DELETE/file", async (data, { rejectWithValue }) => {
+  try {
+    const res = await fetch(
+      `${import.meta.env.VITE_BACKEND_URL}/chat/DeleteMessage?mssgId=${
+        data.mssgId
+      }&chatId=${data.chatId}&roomId=${
+        store.getState().ACTIVECHAT.ActiveChatRoom
+      }`,
+      {
+        method: "DELETE",
+        headers: {
+          Authorization: `${localStorage.getItem("LetsChat")}`,
+        },
+      }
+    );
+    const resData = await res.json();
+    if (!res.ok) {
+      throw new Error(`Failed to DELETE files`);
+    }
+
+    return resData.message;
+  } catch (err: unknown) {
+    const mssg: string = err instanceof Error ? err.message : "";
+    rejectWithValue(mssg);
+  }
+});
+
 const ACTIVECHATslice = createSlice({
   name: "ACTIVECHATslice",
   initialState,
@@ -146,6 +181,7 @@ const ACTIVECHATslice = createSlice({
       // active.payload is a array of messages
       // in case of normal recieve message it will only have one element~arr[0]
       // console.log(`$$$$$->message added`);
+      state.messagesRecieved = state.messagesRecieved + 1;
       state.ActiveChatMessages = [
         ...action.payload.map((ele: mssgInt) => {
           ele.deleteState = true;
@@ -155,10 +191,15 @@ const ACTIVECHATslice = createSlice({
       ];
       console.log(`message has been added`, state.ActiveChatMessages);
     },
-    deleteMessage: (state, action) => {
-      state.ActiveChatMessages = state.ActiveChatMessages.filter(
-        (ele) => ele.mssgId == action.payload.mssgId
-      );
+    deleteMessageSYNC: (state, action) => {
+      console.log(1);
+      state.messagesDeleted = state.messagesDeleted + 1;
+      if (state.ActiveChatId == action.payload.chatId) {
+        console.log(2);
+        state.ActiveChatMessages = state.ActiveChatMessages.filter(
+          (ele) => ele.mssgId != action.payload.mssgId
+        );
+      }
     },
     setdontJumpToNextChatWithoutLeaveingCurrentChatTRUE: (state) => {
       state.dontJumpToNextChatWithoutLeaveingCurrentChat = true;
@@ -226,6 +267,26 @@ const ACTIVECHATslice = createSlice({
           state.fileUploadLoadState = false;
         }
       );
+
+    builder
+      .addCase(deleteMessageASYNC.pending, (state) => {
+        state.status = "loading";
+      })
+      .addCase(deleteMessageASYNC.fulfilled, (state) => {
+        state.status = "successful";
+      })
+      .addCase(
+        deleteMessageASYNC.rejected,
+        (
+          state,
+          action: ReturnType<typeof deleteMessageASYNC.rejected> & {
+            payload: string;
+          }
+        ) => {
+          state.status = "error";
+          state.error = action.payload;
+        }
+      );
   },
 });
 
@@ -236,5 +297,5 @@ export const {
   addMessageRecieved,
   setdontJumpToNextChatWithoutLeaveingCurrentChatTRUE,
   setdontJumpToNextChatWithoutLeaveingCurrentChatFALSE,
-  deleteMessage,
+  deleteMessageSYNC,
 } = ACTIVECHATslice.actions;

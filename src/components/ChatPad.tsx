@@ -30,14 +30,18 @@ function ChatPad() {
   };
 
   useEffect(() => {
-    // console.log(`---->`, div);
     const handler = (e: Event) => {
-      console.log(`fewfew`);
-      DivHeight.current = e.srcElement.offsetHeight;
-      scrollHeight.current = e.srcElement.scrollHeight;
-      scrollTop.current = Math.abs(e.srcElement.scrollTop);
+      console.log("fewfew");
+
+      const target = e.srcElement as HTMLElement;
+
+      DivHeight.current = target.offsetHeight;
+      scrollHeight.current = target.scrollHeight;
+      scrollTop.current = Math.abs(target.scrollTop);
+
       const dif =
         scrollHeight.current - (DivHeight.current + scrollTop.current);
+
       if (dif < 250 && store.getState().ACTIVECHAT.hasMore) {
         fetchFn();
       }

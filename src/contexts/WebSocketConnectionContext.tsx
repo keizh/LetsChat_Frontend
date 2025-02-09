@@ -7,7 +7,10 @@ import {
   addNewActiveChat,
   updateActiveChatsArraay,
 } from "../Features/ChatsANDContactslice";
-import { addMessageRecieved } from "../Features/ACTIVECHATslice";
+import {
+  addMessageRecieved,
+  deleteMessageSYNC,
+} from "../Features/ACTIVECHATslice";
 type WSContextType = {
   ws: React.MutableRefObject<WebSocket | null> | null;
   logoutHandler: () => void;
@@ -153,6 +156,16 @@ const WSContextComp = (Props: AuxProps) => {
             console.log(`message will get added`, payload.mssgData);
             dispatch(addMessageRecieved(payload.mssgData));
           }
+          break;
+
+        case "DELETE/MESSAGE":
+          console.log(`DELETE/MESSAGE from server recieved`);
+          dispatch(
+            deleteMessageSYNC({
+              mssgId: payload.mssgId,
+              chatId: payload.chatId,
+            })
+          );
           break;
 
         default:
