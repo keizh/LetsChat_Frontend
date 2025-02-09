@@ -15,6 +15,12 @@ const initialState: {
   activeChatProfileURL: string;
   fileUploadLoadState: boolean;
   dontJumpToNextChatWithoutLeaveingCurrentChat: boolean;
+  // pagination parameter;
+  nextPage: number;
+  currPage: number;
+  hasMore: boolean;
+  messagesRecieved: number;
+  messagesDeleted: number;
 } = {
   // ListOfChats: [],
   ActiveChatId: "",
@@ -29,15 +35,31 @@ const initialState: {
   activeChatProfileURL: "",
   fileUploadLoadState: false,
   dontJumpToNextChatWithoutLeaveingCurrentChat: false,
+  nextPage: 1,
+  currPage: 1,
+  hasMore: false,
+  messagesRecieved: 0,
+  messagesDeleted: 0,
 };
 
 export const fetchChatHistory = createAsyncThunk<
-  { data: ONE2ONEResponseInterface },
   {
-    participants: string[];
-    userIdOfClient: string;
-    userIdOfOppositeUser: string;
-    lastAccessMoment: number;
+    data: ONE2ONEResponseInterface;
+    messages: mssgInt[];
+    hasMore: boolean;
+    nextPage: number;
+  },
+  {
+    // for fetching messages for the first time ( below first 4 needed )
+    participants?: string[];
+    userIdOfClient?: string;
+    userIdOfOppositeUser?: string;
+    lastAccessMoment?: number;
+    // for fetching future messages
+    chatId?: string;
+    messagesRecieved: number;
+    messagesDeleted: number;
+    PageNumber: number;
   },
   {
     rejectValue: string;
@@ -113,6 +135,11 @@ const ACTIVECHATslice = createSlice({
         activeChatEmail: "",
         activeChatName: "",
         activeChatProfileURL: "",
+        nextPage: 1,
+        currPage: 1,
+        hasMore: false,
+        messagesRecieved: 0,
+        messagesDeleted: 0,
       };
     },
     addMessageRecieved: (state, action) => {
@@ -120,10 +147,18 @@ const ACTIVECHATslice = createSlice({
       // in case of normal recieve message it will only have one element~arr[0]
       // console.log(`$$$$$->message added`);
       state.ActiveChatMessages = [
-        ...action.payload,
+        ...action.payload.map((ele: mssgInt) => {
+          ele.deleteState = true;
+          return ele;
+        }),
         ...state.ActiveChatMessages,
       ];
       console.log(`message has been added`, state.ActiveChatMessages);
+    },
+    deleteMessage: (state, action) => {
+      state.ActiveChatMessages = state.ActiveChatMessages.filter(
+        (ele) => ele.mssgId == action.payload.mssgId
+      );
     },
     setdontJumpToNextChatWithoutLeaveingCurrentChatTRUE: (state) => {
       state.dontJumpToNextChatWithoutLeaveingCurrentChat = true;
@@ -139,12 +174,21 @@ const ACTIVECHATslice = createSlice({
         state.activeChatloading = true;
       })
       .addCase(fetchChatHistory.fulfilled, (state, action) => {
-        // console.log(`line 92`, action.payload);
+        console.log(`line messages fetched`, action.payload);
         state.status = "successful";
-        state.ActiveChatMessages = action.payload.data.messages;
+        state.ActiveChatMessages = [
+          ...state.ActiveChatMessages,
+          ...action.payload.messages.map((ele) => {
+            ele.deleteState = false;
+            return ele;
+          }),
+        ];
         state.ActiveChatRoom = action.payload.data.roomId;
         state.ActiveChatId = action.payload.data._id;
         state.activeChatloading = false;
+        state.hasMore = action.payload.hasMore;
+        state.nextPage = action.payload.nextPage;
+        state.currPage = action.payload.nextPage - 1;
       })
       .addCase(
         fetchChatHistory.rejected,
@@ -192,4 +236,5 @@ export const {
   addMessageRecieved,
   setdontJumpToNextChatWithoutLeaveingCurrentChatTRUE,
   setdontJumpToNextChatWithoutLeaveingCurrentChatFALSE,
+  deleteMessage,
 } = ACTIVECHATslice.actions;

@@ -1,4 +1,3 @@
-/* eslint-disable react-hooks/exhaustive-deps */
 import { useState } from "react";
 import {
   Button,
@@ -226,8 +225,8 @@ function ChatBox() {
           </div>
         </div>
         {/* MIddle Section */}
-        <div className="h-[78%] sm:h-[84%] p-2">
-          <div className="bg-white h-full rounded"></div>
+        <div className="h-[78vh]  sm:h-[84%] rounded p-2 ">
+          <ChatPad />
         </div>
         {/* Bottom Section */}
         <div className="h-[14%] bg-white sm:h-[8%] flex flex-col justify-center sm:flex-row items-center gap-1 px-2">

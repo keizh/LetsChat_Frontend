@@ -9,6 +9,7 @@ import {
 import useSelectorHook from "../customHooks/useSelectorHook";
 import { ActiveChatInterface } from "../types";
 import { update_USER_LAST_ACCESS_TIME_ListOfFriends } from "../Features/ChatsANDContactslice";
+import store from "../APP/store";
 
 function ActiveChatRectangleTab({ ele }: { ele: ActiveChatInterface }) {
   const dispatch = useDispatchHook();
@@ -79,7 +80,11 @@ function ActiveChatRectangleTab({ ele }: { ele: ActiveChatInterface }) {
             participants: [userId, ele.chatId],
             userIdOfClient: userId,
             userIdOfOppositeUser: ele.chatId,
+            chatId: "",
             lastAccessMoment,
+            messagesRecieved: store.getState().ACTIVECHAT.messagesRecieved,
+            messagesDeleted: store.getState().ACTIVECHAT.messagesDeleted,
+            PageNumber: store.getState().ACTIVECHAT.nextPage,
           })
         );
         // update last access time

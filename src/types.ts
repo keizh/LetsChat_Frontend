@@ -26,6 +26,9 @@ export interface mssgInt {
   payload: string;
   mssgId: string;
   uploadTime: number;
+  deleteState?: boolean;
+  senderId: string;
+  senderName: string;
 }
 
 export interface ONE2ONEResponseInterface {

@@ -1,25 +1,103 @@
 import InfiniteScroll from "react-infinite-scroll-component";
+import useSelectorHook from "../customHooks/useSelectorHook";
+import useDispatchHook from "../customHooks/useDispatchHook";
+import { fetchChatHistory } from "../Features/ACTIVECHATslice";
+import store from "../APP/store";
+import TextCOMP from "./TextCOMP";
+import AudioCOMP from "./AudioCOMP";
+import ImageCOMP from "./ImageCOMP";
+import VideoCOM from "./VideoCOM";
+import PdfCOMP from "./PdfCOMP";
+import { useEffect, useRef } from "react";
 
 function ChatPad() {
+  const { ActiveChatMessages } = useSelectorHook("ACTIVECHAT");
+  const dispatch = useDispatchHook();
+  const scrollHeight = useRef(0);
+  const scrollTop = useRef(0);
+  const DivHeight = useRef(0);
+  const div = useRef<HTMLDivElement | null>(null);
+
+  const fetchFn = () => {
+    dispatch(
+      fetchChatHistory({
+        chatId: store.getState().ACTIVECHAT.ActiveChatId,
+        messagesRecieved: store.getState().ACTIVECHAT.messagesRecieved,
+        messagesDeleted: store.getState().ACTIVECHAT.messagesDeleted,
+        PageNumber: store.getState().ACTIVECHAT.nextPage,
+      })
+    );
+  };
+
+  useEffect(() => {
+    // console.log(`---->`, div);
+    const handler = (e: Event) => {
+      console.log(`fewfew`);
+      DivHeight.current = e.srcElement.offsetHeight;
+      scrollHeight.current = e.srcElement.scrollHeight;
+      scrollTop.current = Math.abs(e.srcElement.scrollTop);
+      const dif =
+        scrollHeight.current - (DivHeight.current + scrollTop.current);
+      if (dif < 250 && store.getState().ACTIVECHAT.hasMore) {
+        fetchFn();
+      }
+    };
+    if (div.current) div.current.addEventListener("scroll", handler);
+
+    return () => {
+      if (div.current) div.current.addEventListener("scroll", handler);
+    };
+  }, []);
+
   return (
     <div
-      id="scrollableDiv"
-      className="bg-white h-full rounded flex flex-col-reverse "
+      ref={div}
+      className="bg-white"
+      style={{
+        height: "80vh",
+        overflow: "auto",
+        display: "flex",
+        flexDirection: "column-reverse",
+      }}
     >
       <InfiniteScroll
-        dataLength={this.state.items.length}
-        next={this.fetchMoreData}
-        style={{ display: "flex", flexDirection: "column-reverse" }} //To put endMessage and loader to the top.
-        inverse={true} //
-        hasMore={true}
+        dataLength={ActiveChatMessages.length}
+        next={fetchFn}
+        style={{
+          display: "flex",
+          flexDirection: "column-reverse",
+          gap: "15px",
+        }}
+        inverse={true}
+        hasMore={store.getState().ACTIVECHAT.hasMore}
         loader={<h4>Loading...</h4>}
         scrollableTarget="scrollableDiv"
+        refreshFunction={fetchFn}
+        pullDownToRefresh
+        pullDownToRefreshThreshold={50}
+        pullDownToRefreshContent={
+          <h3 style={{ textAlign: "center" }}>&#8595;</h3>
+        }
+        releaseToRefreshContent={
+          <h3 style={{ textAlign: "center" }}>&#8593;</h3>
+        }
       >
-        {this.state.items.map((_, index) => (
-          <div style={style} key={index}>
-            div - #{index}
-          </div>
-        ))}
+        {ActiveChatMessages.map((ele) => {
+          switch (ele.type) {
+            case "text":
+              return <TextCOMP ele={ele} key={ele.mssgId} />;
+            case "image":
+              return <ImageCOMP ele={ele} key={ele.mssgId} />;
+            case "audio":
+              return <AudioCOMP ele={ele} key={ele.mssgId} />;
+            case "video":
+              return <VideoCOM ele={ele} key={ele.mssgId} />;
+            case "pdf":
+              return <PdfCOMP ele={ele} key={ele.mssgId} />;
+            default:
+              console.log(`no such comp exists for message`);
+          }
+        })}
       </InfiniteScroll>
     </div>
   );
