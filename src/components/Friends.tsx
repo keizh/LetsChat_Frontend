@@ -7,6 +7,7 @@ import {
   setActiveChatBox,
   fetchChatHistory,
 } from "../Features/ACTIVECHATslice";
+import store from "../APP/store";
 
 function Friends({ ele }: { ele: friendsInterface }) {
   // console.log(ele.name);
@@ -26,6 +27,10 @@ function Friends({ ele }: { ele: friendsInterface }) {
         userIdOfClient: userId,
         userIdOfOppositeUser: ele._id,
         lastAccessMoment: Date.now(),
+        messagesDeleted: store.getState().ACTIVECHAT.messagesDeleted,
+        messagesRecieved: store.getState().ACTIVECHAT.messagesRecieved,
+        PageNumber: 1,
+        chatId: ele._id,
       })
     );
     // console.log(userId, ele._id);

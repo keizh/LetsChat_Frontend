@@ -18,6 +18,11 @@ import { setdontJumpToNextChatWithoutLeaveingCurrentChatFALSE } from "../Feature
 import useDispatchHook from "../customHooks/useDispatchHook";
 import ProfileImageUpdate from "../components/ProfileImageUpdate";
 import { setToggleUserProfileButton } from "../Features/USERslice";
+import {
+  updateOpenCreateModel,
+  fetchedFriendsToMakeGroup,
+} from "../Features/GroupSlice";
+import CreateGroup from "../components/CreateGroup";
 
 export default function ChatPage() {
   const dispatch = useDispatchHook();
@@ -61,7 +66,15 @@ export default function ChatPage() {
             >
               EDIT Profile
             </Button>
-            <Button color="green">Create Group</Button>
+            <Button
+              onClick={() => {
+                dispatch(updateOpenCreateModel(true));
+                dispatch(fetchedFriendsToMakeGroup());
+              }}
+              color="green"
+            >
+              Create Group
+            </Button>
             <Button
               color="red"
               onClick={() => {
@@ -158,6 +171,7 @@ true ? `block fixed inset-0 m-2  z-40` : `hidden`
         </Dialog>
       )}
       <ProfileImageUpdate />
+      <CreateGroup />
     </div>
   );
 }
