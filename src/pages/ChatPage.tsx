@@ -23,6 +23,7 @@ import {
   fetchedFriendsToMakeGroup,
 } from "../Features/GroupSlice";
 import CreateGroup from "../components/CreateGroup";
+import EditGroup from "../components/EditGroup";
 
 export default function ChatPage() {
   const dispatch = useDispatchHook();
@@ -172,6 +173,7 @@ true ? `block fixed inset-0 m-2  z-40` : `hidden`
       )}
       <ProfileImageUpdate />
       <CreateGroup />
+      <EditGroup />
     </div>
   );
 }

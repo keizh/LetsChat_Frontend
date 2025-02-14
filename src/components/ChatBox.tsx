@@ -18,6 +18,11 @@ import { setInActiveChatBox, postFiles } from "../Features/ACTIVECHATslice";
 import { update_USER_LAST_ACCESS_TIME_ListOfFriends } from "../Features/ChatsANDContactslice";
 // import { setLastAccessToRoom } from "../Features/USERslice";
 import store from "../APP/store";
+import {
+  fetchGroupMembers,
+  fetchedFriendsToMakeGroup,
+  updateOpenGroupEditState,
+} from "../Features/GroupSlice";
 
 function ChatBox() {
   const dispatch = useDispatchHook();
@@ -128,6 +133,12 @@ function ChatBox() {
     handleOpen();
   };
 
+  const editHandler = () => {
+    dispatch(fetchGroupMembers());
+    dispatch(fetchedFriendsToMakeGroup());
+    dispatch(updateOpenGroupEditState(true));
+  };
+
   if (activeChatloading) {
     return (
       <div className="h-[100%] w-[100%]  bg-[#f1f8e9] z-[100] flex justify-center items-center">
@@ -169,8 +180,8 @@ function ChatBox() {
             {!ActiveChatId.includes("PERSONAL") &&
               store.getState().ACTIVECHAT.admin ==
                 store.getState().USER.userId && (
-                <Button size="sm" color="blue">
-                  EDIT{" "}
+                <Button onClick={editHandler} size="sm" color="blue">
+                  EDIT
                 </Button>
               )}
             <Button size="sm" color="red" onClick={exitHandler}>

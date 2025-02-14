@@ -36,6 +36,7 @@ function AudioCOMP({ ele }: { ele: mssgInt }) {
       >
         <audio controls src={`${ele.payload}`}></audio>
         <p className="p-2 rounded bg-white text-red-400">{formattedDate}</p>
+        <p>{ele.senderName}</p>
         {ele.deleteState && ele.senderId == store.getState().USER.userId && (
           <Button onClick={deleteHandler} fullWidth color="red" size="sm">
             DELETE

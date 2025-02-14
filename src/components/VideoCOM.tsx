@@ -42,6 +42,7 @@ function VideoCOMP({ ele }: { ele: mssgInt }) {
           Your browser does not support the video tag.
         </video>
         <p className="p-2 rounded bg-white text-red-400">{formattedDate}</p>
+        <p>{ele.senderName}</p>
         {ele.deleteState && ele.senderId == store.getState().USER.userId && (
           <Button onClick={deleteHandler} fullWidth color="red" size="sm">
             DELETE
