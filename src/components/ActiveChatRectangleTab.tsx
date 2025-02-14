@@ -19,12 +19,6 @@ function ActiveChatRectangleTab({ ele }: { ele: ActiveChatInterface }) {
       ? ele.lastMessageSender != userId
       : false
   );
-  // console.log(
-  //   ele.lastMessageTime > ele.USER_LAST_ACCESS_TIME
-  //     ? ele.lastMessageSender != userId
-  //     : false
-  // );
-  // console.log(`isAlert`, isAlert);
   const { ActiveChat } = useSelectorHook("ACTIVECHAT");
 
   useEffect(() => {
@@ -39,24 +33,9 @@ function ActiveChatRectangleTab({ ele }: { ele: ActiveChatInterface }) {
     userId,
   ]);
 
-  // useEffect(() => {
-  //   if (ws?.current != null) {
-  //     ws.current.onmessage = (event: MessageEvent) => {
-  //       const parse = JSON.parse(event.data as string);
-  //       const { type, payload } = parse;
-  //       if (type == "Message/ALERT") {
-  //         console.log(`Message/ALERT -> hit`);
-  //         const { roomId } = payload;
-  //         if (ele.roomId == roomId) {
-  //           setIsAlert(true);
-  //         }
-  //       }
-  //     };
-  //   }
-  // }, [wsSET, ws, ele.roomId]);
-
   const onClickHandler = () => {
     const lastAccessMoment = Date.now();
+
     if (!ActiveChat) {
       // mark alert to false
       setIsAlert(false);
@@ -71,6 +50,7 @@ function ActiveChatRectangleTab({ ele }: { ele: ActiveChatInterface }) {
             email: "PERSONAL CHAT",
             name: ele.chatName,
             profileURL: ele.profileURL,
+            admin: ele.admin,
           })
         );
         // fetch ONE2ONE chat history
@@ -98,9 +78,21 @@ function ActiveChatRectangleTab({ ele }: { ele: ActiveChatInterface }) {
             email: "GROUP CHAT",
             name: ele.chatName,
             profileURL: ele.profileURL,
+            admin: ele.admin,
           })
         );
-        //   dispatch(DIFFERENT PROTOCOL TO FETCH GROUP CHAT);
+        dispatch(
+          fetchChatHistory({
+            participants: [],
+            userIdOfClient: userId,
+            userIdOfOppositeUser: "",
+            chatId: ele.chatId,
+            lastAccessMoment,
+            messagesRecieved: store.getState().ACTIVECHAT.messagesRecieved,
+            messagesDeleted: store.getState().ACTIVECHAT.messagesDeleted,
+            PageNumber: store.getState().ACTIVECHAT.nextPage,
+          })
+        );
       }
       // console.log(`lastAccessMoment 2 ⚠️`, lastAccessMoment);
       dispatch(

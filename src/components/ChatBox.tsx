@@ -17,6 +17,7 @@ import { useWSContext } from "../contexts/WebSocketConnectionContext";
 import { setInActiveChatBox, postFiles } from "../Features/ACTIVECHATslice";
 import { update_USER_LAST_ACCESS_TIME_ListOfFriends } from "../Features/ChatsANDContactslice";
 // import { setLastAccessToRoom } from "../Features/USERslice";
+import store from "../APP/store";
 
 function ChatBox() {
   const dispatch = useDispatchHook();
@@ -123,58 +124,9 @@ function ChatBox() {
     FILES_FORMDATA.append("roomId", `${ActiveChatRoom}`);
     FILES_FORMDATA.append("chatId", `${ActiveChatId}`);
 
-    // console.log(JSON.stringify(FILES_FORMDATA));
-    // console.log(FILES_FORMDATA);
-    // for (const pair of FILES_FORMDATA.entries()) {
-    // console.log(`${pair[0]} - ${pair[1]}`);
-    // }
     dispatch(postFiles({ FILES_FORMDATA }));
     handleOpen();
   };
-
-  // useEffect(() => {
-  //   if (ws?.current != null) {
-  //     ws.current.onmessage = (event: MessageEvent) => {
-  //       const parse = JSON.parse(event.data as string);
-  //       const { type, payload } = parse;
-
-  //       if (type == "RECIEVE/MESSAGE") {
-  //         const { mssgData, roomId } = payload;
-  //         console.log(`RECIEVE/MESSAGE`, mssgData, roomId);
-  //         console.log(`roomId`, roomId, typeof roomId);
-  //         console.log(`ActiveChatRoom`, ActiveChatRoom, typeof ActiveChatRoom);
-  //         if (roomId == ActiveChatRoom) {
-  //           console.log(`same room`);
-  //           dispatch(addMessageRecieved(mssgData));
-  //         }
-  //       }
-  //     };
-  //   }
-
-  //   return () => {
-  //     if (ws?.current) {
-  //       ws.current.onmessage = (event: MessageEvent) => {
-  //         const parse = JSON.parse(event.data as string);
-  //         const { type, payload } = parse;
-
-  //         if (type == "RECIEVE/MESSAGE") {
-  //           const { mssgData, roomId } = payload;
-  //           console.log(`RECIEVE/MESSAGE`, mssgData, roomId);
-  //           console.log(`roomId`, roomId, typeof roomId);
-  //           console.log(
-  //             `ActiveChatRoom`,
-  //             ActiveChatRoom,
-  //             typeof ActiveChatRoom
-  //           );
-  //           if (roomId == ActiveChatRoom) {
-  //             console.log(`same room`);
-  //             dispatch(addMessageRecieved(mssgData));
-  //           }
-  //         }
-  //       };
-  //     }
-  //   };
-  // }, []);
 
   if (activeChatloading) {
     return (
@@ -214,11 +166,13 @@ function ChatBox() {
             </div>
           </div>
           <div className="flex gap-4">
-            {!ActiveChatId.includes("PERSONAL") && (
-              <Button size="sm" color="blue">
-                EDIT{" "}
-              </Button>
-            )}
+            {!ActiveChatId.includes("PERSONAL") &&
+              store.getState().ACTIVECHAT.admin ==
+                store.getState().USER.userId && (
+                <Button size="sm" color="blue">
+                  EDIT{" "}
+                </Button>
+              )}
             <Button size="sm" color="red" onClick={exitHandler}>
               EXIT CHAT
             </Button>

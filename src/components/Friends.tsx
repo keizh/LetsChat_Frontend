@@ -21,19 +21,20 @@ function Friends({ ele }: { ele: friendsInterface }) {
         profileURL: ele.profileURL,
       })
     );
+    console.log("userId", ele._id);
     dispatch(
       fetchChatHistory({
         participants: [userId, ele._id],
         userIdOfClient: userId,
         userIdOfOppositeUser: ele._id,
         lastAccessMoment: Date.now(),
-        messagesDeleted: store.getState().ACTIVECHAT.messagesDeleted,
-        messagesRecieved: store.getState().ACTIVECHAT.messagesRecieved,
+        messagesDeleted: 0,
+        messagesRecieved: 0,
         PageNumber: 1,
-        chatId: ele._id,
+        chatId: "",
       })
     );
-    // console.log(userId, ele._id);
+    console.log("userId", ele._id);
   };
   return (
     <div

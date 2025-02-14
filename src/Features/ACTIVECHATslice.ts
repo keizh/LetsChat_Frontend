@@ -22,6 +22,8 @@ const initialState: {
   hasMore: boolean;
   messagesRecieved: number;
   messagesDeleted: number;
+  // admin | personal chats admin is "" | group chats admin is someone
+  admin: string;
 } = {
   // ListOfChats: [],
   ActiveChatId: "",
@@ -66,6 +68,7 @@ export const fetchChatHistory = createAsyncThunk<
     rejectValue: string;
   }
 >("fetch/Chat", async (data, { rejectWithValue }) => {
+  console.log(`First needed`);
   try {
     const res = await fetch(
       `${import.meta.env.VITE_BACKEND_URL}/chat/ONE2ONE`,
@@ -128,7 +131,7 @@ export const deleteMessageASYNC = createAsyncThunk<
     const res = await fetch(
       `${import.meta.env.VITE_BACKEND_URL}/chat/DeleteMessage?mssgId=${
         data.mssgId
-      }&chatId=${data.chatId}&roomId=${
+      }&chatId=${store.getState().ACTIVECHAT.ActiveChatId}&roomId=${
         store.getState().ACTIVECHAT.ActiveChatRoom
       }`,
       {
@@ -159,6 +162,7 @@ const ACTIVECHATslice = createSlice({
       state.activeChatEmail = action.payload.email;
       state.activeChatName = action.payload.name;
       state.activeChatProfileURL = action.payload.prof;
+      state.admin = action.payload.admin;
     },
     setInActiveChatBox: (state) => {
       return {
@@ -175,6 +179,7 @@ const ACTIVECHATslice = createSlice({
         hasMore: false,
         messagesRecieved: 0,
         messagesDeleted: 0,
+        admin: "",
       };
     },
     addMessageRecieved: (state, action) => {

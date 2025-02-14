@@ -47,4 +47,5 @@ export interface ActiveChatInterface {
   lastMessageSender: string;
   lastMessageTime: number;
   USER_LAST_ACCESS_TIME: number;
+  admin: string;
 }
