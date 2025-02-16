@@ -1,6 +1,8 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import { friendsInterface } from "../types";
 import store from "../APP/store";
+import { setGroupName } from "../Features/ACTIVECHATslice";
+import { updateGroupName } from "../Features/ChatsANDContactslice";
 
 const initialState: {
   openCreateModel: boolean;
@@ -108,10 +110,13 @@ export const fetchGroupMembers = createAsyncThunk(
 );
 
 export const updateGroup = createAsyncThunk<
-  string,
+  {
+    message: string;
+    participants: string[];
+  },
   FormData,
   { rejectValue: string }
->("POST/updateGroup", async (data, { rejectWithValue }) => {
+>("POST/updateGroup", async (data, { dispatch, rejectWithValue }) => {
   try {
     const res = await fetch(
       `${import.meta.env.VITE_BACKEND_URL}/chat/updateGroup`,
@@ -128,7 +133,9 @@ export const updateGroup = createAsyncThunk<
     if (!res.ok) {
       throw new Error(`Failed to update group`);
     }
-    return resData.message;
+    dispatch(setGroupName(resData.groupName));
+    dispatch(updateGroupName(resData));
+    return resData;
   } catch (err) {
     return rejectWithValue(
       err instanceof Error ? err.message : "Failed to update"
@@ -154,6 +161,9 @@ export const GroupSlice = createSlice({
     updateOpenGroupEditState: (state, action) => {
       console.log(action.payload);
       state.openEditGroupModel = action.payload;
+    },
+    emptydefaultValuesForSelect: (state) => {
+      state.defaultValuesForSelect = [];
     },
   },
   extraReducers: (builder) => {
@@ -218,6 +228,7 @@ export const GroupSlice = createSlice({
       })
       .addCase(updateGroup.fulfilled, (state) => {
         state.creatingGroupEditLoadingState = false;
+        state.openEditGroupModel = false;
       })
       .addCase(
         updateGroup.rejected,
@@ -240,4 +251,5 @@ export const {
   updateCreatingGroupLoadingState,
   updateCreatingGroupEditLoadingState,
   updateOpenGroupEditState,
+  emptydefaultValuesForSelect,
 } = GroupSlice.actions;

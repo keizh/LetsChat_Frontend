@@ -8,7 +8,11 @@ import {
   Typography,
 } from "@material-tailwind/react";
 import Select from "react-select";
-import { updateGroup, updateOpenGroupEditState } from "../Features/GroupSlice";
+import {
+  updateGroup,
+  updateOpenGroupEditState,
+  emptydefaultValuesForSelect,
+} from "../Features/GroupSlice";
 import useDispatchHook from "../customHooks/useDispatchHook";
 import useSelectorHook from "../customHooks/useSelectorHook";
 import { useEffect, useState, useRef } from "react";
@@ -114,10 +118,15 @@ export default function EditGroup() {
   const onSubmitHandler = (e: HTMLFormElement) => {
     e.preventDefault();
     const FD = new FormData();
-
-    FD.append("image", typeof file == "string" ? new Blob() : file);
-    FD.append("updateImage", typeof file == "string" ? "" : "true");
-    FD.append("participants", JSON.stringify(renderFriends));
+    const load = typeof file == "string" ? new File([""], "empty.txt") : file;
+    FD.append("image", load);
+    FD.append(
+      "updateImage",
+      typeof file == "object" ? JSON.stringify("true") : JSON.stringify(false)
+    );
+    const arrOfParticipants = [...selected, store.getState().USER.userId];
+    console.log(`arrOfParticipants`, arrOfParticipants);
+    FD.append("participants", JSON.stringify(arrOfParticipants));
     FD.append("groupName", GN);
     FD.append("chatId", store.getState().ACTIVECHAT.ActiveChatId);
     FD.append("roomId", store.getState().ACTIVECHAT.ActiveChatRoom);
@@ -174,6 +183,7 @@ export default function EditGroup() {
                 onChange={(e) => {
                   //   console.log(e);
                   const participants = e.map((ele) => ele.value);
+                  console.log(...participants);
                   setSelected(participants);
                 }}
               />
@@ -195,6 +205,7 @@ export default function EditGroup() {
             color="red"
             onClick={() => {
               dispatch(updateOpenGroupEditState(false));
+              dispatch(emptydefaultValuesForSelect());
             }}
             className="mr-1"
           >

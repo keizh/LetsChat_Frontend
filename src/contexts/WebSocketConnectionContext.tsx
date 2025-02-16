@@ -6,6 +6,7 @@ import useDispatchHook from "../customHooks/useDispatchHook";
 import {
   addNewActiveChat,
   updateActiveChatsArraay,
+  removeGroupChat,
 } from "../Features/ChatsANDContactslice";
 import {
   addMessageRecieved,
@@ -46,7 +47,7 @@ const WSContextComp = (Props: AuxProps) => {
 
   const { userId } = useSelectorHook(`USER`);
 
-  const { ActiveChatRoom } = useSelectorHook(`ACTIVECHAT`);
+  // const { ActiveChatRoom } = useSelectorHook(`ACTIVECHAT`);
 
   // ⭐ : USER CLICK LOGOUT HANDLER
   const logoutHandler = () => {
@@ -166,6 +167,21 @@ const WSContextComp = (Props: AuxProps) => {
               chatId: payload.chatId,
             })
           );
+          break;
+
+        case "REMOVE/GROUP/CHAT":
+          console.log(`007 removeGroupChat hit`);
+          dispatch(
+            removeGroupChat({
+              roomId: payload.roomId,
+              chatId: payload.chatId,
+            })
+          );
+          break;
+
+        case "ADD/GROUP/CHAT":
+          console.log(`007 addGroupChat hit`);
+          dispatch(addNewActiveChat(payload));
           break;
 
         default:

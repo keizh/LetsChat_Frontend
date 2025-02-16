@@ -108,7 +108,7 @@ export const fetchFriendsSearch = createAsyncThunk<
 
 export const fetchActiveChats = createAsyncThunk<
   ActiveChatInterface[],
-  {},
+  _,
   {
     rejectValue: string;
   }
@@ -145,6 +145,14 @@ const ChatsANDContactslice = createSlice({
     addNewActiveChat: (state, action) => {
       state.ListOfActiveChats = [action.payload, ...state.ListOfActiveChats];
     },
+    updateGroupName: (state, action) => {
+      state.ListOfActiveChats = state.ListOfActiveChats.map((ele) => {
+        if (ele.chatId == action.payload.chatId) {
+          ele.chatName = action.payload.groupName;
+        }
+        return ele;
+      });
+    },
     updateActiveChatsArraay: (state, action) => {
       const { roomId, lastUpdated, lastMessageSender, lastMessageTime } =
         action.payload;
@@ -177,10 +185,14 @@ const ChatsANDContactslice = createSlice({
 
         return ele;
       });
-      // console.log(
-      //   `AFTER update_USER_LAST_ACCESS_TIME_ListOfFriends ==>`,
-      //   state.ListOfActiveChats
-      // );
+    },
+    removeGroupChat: (state, action) => {
+      return {
+        ...state,
+        ListOfActiveChats: state.ListOfActiveChats.filter(
+          (ele) => ele.roomId != action.payload.roomId
+        ),
+      };
     },
   },
   extraReducers: (builder) => {
@@ -271,4 +283,6 @@ export const {
   addNewActiveChat,
   updateActiveChatsArraay,
   update_USER_LAST_ACCESS_TIME_ListOfFriends,
+  removeGroupChat,
+  updateGroupName,
 } = ChatsANDContactslice.actions;

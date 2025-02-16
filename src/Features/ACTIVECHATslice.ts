@@ -212,6 +212,9 @@ const ACTIVECHATslice = createSlice({
     setdontJumpToNextChatWithoutLeaveingCurrentChatFALSE: (state) => {
       state.dontJumpToNextChatWithoutLeaveingCurrentChat = false;
     },
+    setGroupName: (state, action) => {
+      state.activeChatName = action.payload;
+    },
   },
   extraReducers: (builder) => {
     builder
@@ -303,4 +306,5 @@ export const {
   setdontJumpToNextChatWithoutLeaveingCurrentChatTRUE,
   setdontJumpToNextChatWithoutLeaveingCurrentChatFALSE,
   deleteMessageSYNC,
+  setGroupName,
 } = ACTIVECHATslice.actions;
