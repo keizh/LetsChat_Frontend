@@ -11,6 +11,7 @@ import {
 import {
   addMessageRecieved,
   deleteMessageSYNC,
+  setInActiveChatBox,
 } from "../Features/ACTIVECHATslice";
 type WSContextType = {
   ws: React.MutableRefObject<WebSocket | null> | null;
@@ -182,6 +183,13 @@ const WSContextComp = (Props: AuxProps) => {
         case "ADD/GROUP/CHAT":
           console.log(`007 addGroupChat hit`);
           dispatch(addNewActiveChat(payload));
+          break;
+
+        case "DELETE/GROUP/CHAT":
+          if (store.getState().ACTIVECHAT.ActiveChatId == payload.chatId) {
+            dispatch(setInActiveChatBox());
+          }
+          dispatch(removeGroupChat({ roomId: payload.roomId }));
           break;
 
         default:

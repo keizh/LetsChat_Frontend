@@ -13,6 +13,7 @@ const initialState: {
   error: null | string;
   groupMembers: string[];
   defaultValuesForSelect: { value: string; label: string }[];
+  deleteState: boolean;
 } = {
   openCreateModel: false,
   creatingGroupLoadingState: false,
@@ -22,7 +23,37 @@ const initialState: {
   error: null,
   groupMembers: [],
   defaultValuesForSelect: [],
+  deleteState: false,
 };
+
+export const deleteGroup = createAsyncThunk(
+  "DELETE/group",
+  async (_, { rejectWithValue }) => {
+    try {
+      const res = await fetch(
+        `${import.meta.env.VITE_BACKEND_URL}/chat/deleteGroup?chatId=${
+          store.getState().ACTIVECHAT.ActiveChatId
+        }&roomId=${store.getState().ACTIVECHAT.ActiveChatRoom}`,
+        {
+          method: "DELETE",
+          headers: {
+            Authorization: `${localStorage.getItem("LetsChat")}`,
+          },
+        }
+      );
+      const resData = await res.json();
+
+      if (!res.ok) {
+        throw new Error(`Failed to DELETE GROUP`);
+      }
+      return resData;
+    } catch (err) {
+      return rejectWithValue(
+        err instanceof Error ? err.message : "Failed to DELETE Group"
+      );
+    }
+  }
+);
 
 export const fetchedFriendsToMakeGroup = createAsyncThunk(
   "fetch/contacts",
@@ -239,6 +270,28 @@ export const GroupSlice = createSlice({
           }
         ) => {
           state.creatingGroupEditLoadingState = false;
+          state.error = action.payload;
+        }
+      );
+
+    builder
+      .addCase(deleteGroup.pending, (state) => {
+        state.deleteState = true;
+      })
+      .addCase(deleteGroup.fulfilled, (state) => {
+        state.deleteState = false;
+        state.openEditGroupModel = false;
+      })
+      .addCase(
+        deleteGroup.rejected,
+        (
+          state,
+          action: ReturnType<typeof deleteGroup.rejected> & {
+            payload: string;
+          }
+        ) => {
+          state.deleteState = false;
+          state.openEditGroupModel = false;
           state.error = action.payload;
         }
       );
