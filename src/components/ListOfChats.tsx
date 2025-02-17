@@ -27,6 +27,7 @@ function ListOfChats() {
     <>
       <div className="bg-white">
         <Input
+          crossOrigin="anonymous"
           label="Search Chat"
           onChange={(e) => setSearchInChats(e.target.value)}
         />

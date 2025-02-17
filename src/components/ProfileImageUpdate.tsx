@@ -22,7 +22,8 @@ function ProfileImageUpdate() {
     const imageType = file ? file.type.split("/")[1] : "";
     if (
       file &&
-      (imageType == "png" || imageType == "jpg" || imageType == "jpeg")
+      (imageType == "png" || imageType == "jpg" || imageType == "jpeg") &&
+      file.size < 4 * 1024 * 1024
     ) {
       setPIC(file);
     }
@@ -30,7 +31,7 @@ function ProfileImageUpdate() {
 
   const updateHandler = () => {
     const FD = new FormData();
-    FD.append("profileImage", pic);
+    FD.append("profileImage", pic as File);
     for (const pair of FD.entries()) {
       console.log(pair);
     }
@@ -41,7 +42,7 @@ function ProfileImageUpdate() {
   const dispatch = useDispatchHook();
   return (
     <div>
-      <Dialog open={editUserProfileButton}>
+      <Dialog handler={() => {}} open={editUserProfileButton}>
         <DialogHeader>
           Update Profile Image ( Image Type : png , jpg , jpeg)
         </DialogHeader>

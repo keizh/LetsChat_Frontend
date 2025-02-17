@@ -1,4 +1,9 @@
-import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
+import {
+  createSlice,
+  createAsyncThunk,
+  PayloadAction,
+  SerializedError,
+} from "@reduxjs/toolkit";
 import {
   contactsAPIOutputInterface,
   friendsInterface,
@@ -108,7 +113,7 @@ export const fetchFriendsSearch = createAsyncThunk<
 
 export const fetchActiveChats = createAsyncThunk<
   ActiveChatInterface[],
-  _,
+  unknown,
   {
     rejectValue: string;
   }
@@ -221,7 +226,12 @@ const ChatsANDContactslice = createSlice({
         fetchFriends.rejected,
         (
           state,
-          action: ReturnType<typeof fetchFriends.rejected> & { payload: string }
+          action: PayloadAction<
+            string | undefined,
+            string,
+            unknown,
+            SerializedError
+          >
         ) => {
           state.status = "rejected";
           state.error = action?.payload || "";
@@ -241,9 +251,12 @@ const ChatsANDContactslice = createSlice({
         fetchFriendsSearch.rejected,
         (
           state,
-          action: ReturnType<typeof fetchFriendsSearch.rejected> & {
-            payload: string;
-          }
+          action: PayloadAction<
+            string | undefined,
+            string,
+            unknown,
+            SerializedError
+          >
         ) => {
           state.status = "rejected";
           state.error = action?.payload || "";
@@ -263,9 +276,12 @@ const ChatsANDContactslice = createSlice({
         fetchActiveChats.rejected,
         (
           state,
-          action: ReturnType<typeof fetchActiveChats.rejected> & {
-            payload: string;
-          }
+          action: PayloadAction<
+            string | undefined,
+            string,
+            unknown,
+            SerializedError
+          >
         ) => {
           state.status = "rejected";
           state.error = action?.payload || "";

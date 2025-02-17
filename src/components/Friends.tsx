@@ -7,7 +7,7 @@ import {
   setActiveChatBox,
   fetchChatHistory,
 } from "../Features/ACTIVECHATslice";
-import store from "../APP/store";
+// import store from "../APP/store";
 
 function Friends({ ele }: { ele: friendsInterface }) {
   // console.log(ele.name);

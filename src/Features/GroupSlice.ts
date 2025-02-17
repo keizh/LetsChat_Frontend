@@ -1,4 +1,9 @@
-import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
+import {
+  createSlice,
+  createAsyncThunk,
+  PayloadAction,
+  SerializedError,
+} from "@reduxjs/toolkit";
 import { friendsInterface } from "../types";
 import store from "../APP/store";
 import { setGroupName } from "../Features/ACTIVECHATslice";
@@ -26,63 +31,63 @@ const initialState: {
   deleteState: false,
 };
 
-export const deleteGroup = createAsyncThunk(
-  "DELETE/group",
-  async (_, { rejectWithValue }) => {
-    try {
-      const res = await fetch(
-        `${import.meta.env.VITE_BACKEND_URL}/chat/deleteGroup?chatId=${
-          store.getState().ACTIVECHAT.ActiveChatId
-        }&roomId=${store.getState().ACTIVECHAT.ActiveChatRoom}`,
-        {
-          method: "DELETE",
-          headers: {
-            Authorization: `${localStorage.getItem("LetsChat")}`,
-          },
-        }
-      );
-      const resData = await res.json();
-
-      if (!res.ok) {
-        throw new Error(`Failed to DELETE GROUP`);
+export const deleteGroup = createAsyncThunk<
+  unknown,
+  unknown,
+  { rejectValue: string }
+>("DELETE/group", async (_, { rejectWithValue }) => {
+  try {
+    const res = await fetch(
+      `${import.meta.env.VITE_BACKEND_URL}/chat/deleteGroup?chatId=${
+        store.getState().ACTIVECHAT.ActiveChatId
+      }&roomId=${store.getState().ACTIVECHAT.ActiveChatRoom}`,
+      {
+        method: "DELETE",
+        headers: {
+          Authorization: `${localStorage.getItem("LetsChat")}`,
+        },
       }
-      return resData;
-    } catch (err) {
-      return rejectWithValue(
-        err instanceof Error ? err.message : "Failed to DELETE Group"
-      );
+    );
+    const resData = await res.json();
+
+    if (!res.ok) {
+      throw new Error(`Failed to DELETE GROUP`);
     }
+    return resData;
+  } catch (err) {
+    return rejectWithValue(
+      err instanceof Error ? err.message : "Failed to DELETE Group"
+    );
   }
-);
+});
 
-export const fetchedFriendsToMakeGroup = createAsyncThunk(
-  "fetch/contacts",
-  async (_, { rejectWithValue }) => {
-    try {
-      const res = await fetch(
-        `${import.meta.env.VITE_BACKEND_URL}/chat/friends`,
-        {
-          method: "GET",
-          headers: {
-            Authorization: `${localStorage.getItem("LetsChat")}`,
-          },
-        }
-      );
-      const resData = await res.json();
-
-      if (!res.ok) {
-        throw new Error(
-          `Failed to fetch friends to make group or update group`
-        );
+export const fetchedFriendsToMakeGroup = createAsyncThunk<
+  friendsInterface[],
+  unknown,
+  { rejectValue: string }
+>("fetch/contacts", async (_, { rejectWithValue }) => {
+  try {
+    const res = await fetch(
+      `${import.meta.env.VITE_BACKEND_URL}/chat/friends`,
+      {
+        method: "GET",
+        headers: {
+          Authorization: `${localStorage.getItem("LetsChat")}`,
+        },
       }
-      return resData.data;
-    } catch (err) {
-      return rejectWithValue(
-        err instanceof Error ? err.message : "Failed to fetch friends"
-      );
+    );
+    const resData = await res.json();
+
+    if (!res.ok) {
+      throw new Error(`Failed to fetch friends to make group or update group`);
     }
+    return resData.data;
+  } catch (err) {
+    return rejectWithValue(
+      err instanceof Error ? err.message : "Failed to fetch friends"
+    );
   }
-);
+});
 
 export const createGROUPchat = createAsyncThunk<
   string,
@@ -113,32 +118,38 @@ export const createGROUPchat = createAsyncThunk<
   }
 });
 
-export const fetchGroupMembers = createAsyncThunk(
-  "fetch/groupMembers",
-  async (_, { rejectWithValue }) => {
-    try {
-      const res = await fetch(
-        `${import.meta.env.VITE_BACKEND_URL}/chat/fetchGroupMembers?chatId=${
-          store.getState().ACTIVECHAT.ActiveChatId
-        }`,
-        {
-          method: "GET",
-          headers: {
-            Authorization: `${localStorage.getItem("LetsChat")}`,
-          },
-        }
-      );
-      const resData = await res.json();
-
-      if (!res.ok) {
-        throw new Error(`Failed to fetch group members`);
+export const fetchGroupMembers = createAsyncThunk<
+  {
+    defaultValuesForSelect: { value: string; label: string }[];
+    data: string[];
+  },
+  unknown,
+  { rejectValue: string }
+>("fetch/groupMembers", async (_, { rejectWithValue }) => {
+  try {
+    const res = await fetch(
+      `${import.meta.env.VITE_BACKEND_URL}/chat/fetchGroupMembers?chatId=${
+        store.getState().ACTIVECHAT.ActiveChatId
+      }`,
+      {
+        method: "GET",
+        headers: {
+          Authorization: `${localStorage.getItem("LetsChat")}`,
+        },
       }
-      return resData;
-    } catch (err) {
-      return rejectWithValue(err instanceof Error ? err.message : "");
+    );
+    const resData = await res.json();
+
+    if (!res.ok) {
+      throw new Error(`Failed to fetch group members`);
     }
+    return resData;
+  } catch (err) {
+    const message: string =
+      err instanceof Error ? err.message : "error at fetchGroupMembers";
+    return rejectWithValue(message);
   }
-);
+});
 
 export const updateGroup = createAsyncThunk<
   {
@@ -207,11 +218,16 @@ export const GroupSlice = createSlice({
         fetchedFriendsToMakeGroup.rejected,
         (
           state,
-          action: ReturnType<typeof fetchedFriendsToMakeGroup.rejected> & {
-            payload: string;
-          }
+          action: PayloadAction<
+            string | undefined,
+            string,
+            unknown,
+            SerializedError
+          >
         ) => {
-          state.error = action.payload;
+          state.error = action.payload
+            ? action.payload
+            : "Error at fetchedFriendsToMakeGroup";
         }
       );
 
@@ -226,12 +242,17 @@ export const GroupSlice = createSlice({
         createGROUPchat.rejected,
         (
           state,
-          action: ReturnType<typeof createGROUPchat.rejected> & {
-            payload: string;
-          }
+          action: PayloadAction<
+            string | undefined,
+            string,
+            unknown,
+            SerializedError
+          >
         ) => {
           state.creatingGroupLoadingState = false;
-          state.error = action.payload;
+          state.error = action.payload
+            ? action.payload
+            : "Error at createGROUPchat";
         }
       );
 
@@ -245,11 +266,16 @@ export const GroupSlice = createSlice({
         fetchGroupMembers.rejected,
         (
           state,
-          action: ReturnType<typeof fetchGroupMembers.rejected> & {
-            payload: string;
-          }
+          action: PayloadAction<
+            string | undefined,
+            string,
+            unknown,
+            SerializedError
+          >
         ) => {
-          state.error = action.payload;
+          state.error = action.payload
+            ? action.payload
+            : "Error at fetchGroupMembers";
         }
       );
 
@@ -263,14 +289,9 @@ export const GroupSlice = createSlice({
       })
       .addCase(
         updateGroup.rejected,
-        (
-          state,
-          action: ReturnType<typeof updateGroup.rejected> & {
-            payload: string;
-          }
-        ) => {
+        (state, action: PayloadAction<string | undefined>) => {
           state.creatingGroupEditLoadingState = false;
-          state.error = action.payload;
+          state.error = action?.payload ?? "Error at updateGroup";
         }
       );
 
@@ -284,15 +305,12 @@ export const GroupSlice = createSlice({
       })
       .addCase(
         deleteGroup.rejected,
-        (
-          state,
-          action: ReturnType<typeof deleteGroup.rejected> & {
-            payload: string;
-          }
-        ) => {
+        (state, action: PayloadAction<string | undefined>) => {
           state.deleteState = false;
           state.openEditGroupModel = false;
-          state.error = action.payload;
+          state.error = action.payload
+            ? action.payload
+            : "Error at deleteGroup";
         }
       );
   },

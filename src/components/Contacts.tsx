@@ -38,6 +38,7 @@ function Contacts() {
         <Input
           label="Search Contact"
           onChange={(e) => setTXT(e.target.value)}
+          crossOrigin="anonymous"
         />
       </div>
       {search == "" && (

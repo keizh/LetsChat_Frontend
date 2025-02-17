@@ -2,9 +2,10 @@ import { jwtDecode, JwtPayload } from "jwt-decode";
 import { Navigate } from "react-router-dom";
 import { useDispatch } from "react-redux";
 import { setUserDetailSYNC } from "../Features/USERslice";
+import { ReactNode } from "react";
 
 // ⚠️ IF JWT is with valid timeFrame will navigate to actual page or else will present login page
-function AuthorizedRoute({ children }) {
+function AuthorizedRoute({ children }: { children: ReactNode }) {
   // console.log(`AuthorizedRoute`);
   const dispatch = useDispatch();
   const token: string | null = localStorage.getItem(`LetsChat`);

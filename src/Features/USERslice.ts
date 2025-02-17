@@ -1,30 +1,36 @@
-import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
+import {
+  createAsyncThunk,
+  createSlice,
+  PayloadAction,
+  SerializedError,
+} from "@reduxjs/toolkit";
 
-export const fetchUserActiveChatsLastAccessTime = createAsyncThunk(
-  "FETCH/userdoc",
-  async (_, { rejectWithValue }) => {
-    try {
-      const res = await fetch(
-        `${import.meta.env.VITE_BACKEND_URL}/user/LastActive`,
-        {
-          method: "GET",
-          headers: {
-            Authorization: `${localStorage.getItem("LetsChat")}`,
-            "Content-Type": "application/json",
-          },
-        }
-      );
-      const resData = await res.json();
-      if (!res.ok) {
-        throw new Error(`Failed to fetch User chat`);
+export const fetchUserActiveChatsLastAccessTime = createAsyncThunk<
+  UserActiveChatsRoomLastAccessTimeOBJ[],
+  unknown,
+  { rejectValue: string }
+>("FETCH/userdoc", async (_, { rejectWithValue }) => {
+  try {
+    const res = await fetch(
+      `${import.meta.env.VITE_BACKEND_URL}/user/LastActive`,
+      {
+        method: "GET",
+        headers: {
+          Authorization: `${localStorage.getItem("LetsChat")}`,
+          "Content-Type": "application/json",
+        },
       }
-      return resData.data;
-    } catch (err: unknown) {
-      const mssg: string = err instanceof Error ? err.message : "";
-      rejectWithValue(mssg);
+    );
+    const resData = await res.json();
+    if (!res.ok) {
+      throw new Error(`Failed to fetch User chat`);
     }
+    return resData.data;
+  } catch (err: unknown) {
+    const mssg: string = err instanceof Error ? err.message : "";
+    rejectWithValue(mssg);
   }
-);
+});
 
 interface UserActiveChatsRoomLastAccessTimeOBJ {
   roomId: string;
@@ -131,14 +137,17 @@ const USERslice = createSlice({
         fetchUserActiveChatsLastAccessTime.rejected,
         (
           state,
-          action: ReturnType<
-            typeof fetchUserActiveChatsLastAccessTime.rejected
-          > & {
-            payload: string;
-          }
+          action: PayloadAction<
+            string | undefined,
+            string,
+            unknown,
+            SerializedError
+          >
         ) => {
           state.status = "error";
-          state.error = action.payload;
+          state.error = action.payload
+            ? action.payload
+            : "Error at fetchUserActiveChatsLastAccessTime";
         }
       );
 
@@ -154,12 +163,17 @@ const USERslice = createSlice({
         updateProfileURL.rejected,
         (
           state,
-          action: ReturnType<typeof updateProfileURL.rejected> & {
-            payload: string;
-          }
+          action: PayloadAction<
+            string | undefined,
+            string,
+            unknown,
+            SerializedError
+          >
         ) => {
           state.status = "error";
-          state.error = action.payload;
+          state.error = action.payload
+            ? action.payload
+            : "Error at updateProfileURL";
         }
       );
   },

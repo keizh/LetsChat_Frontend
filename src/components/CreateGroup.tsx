@@ -7,16 +7,17 @@ import {
   Input,
   Typography,
 } from "@material-tailwind/react";
+
 import Select from "react-select";
 import {
-  fetchedFriendsToMakeGroup,
+  // fetchedFriendsToMakeGroup,
   updateOpenCreateModel,
-  updateCreatingGroupLoadingState,
+  // updateCreatingGroupLoadingState,
   createGROUPchat,
 } from "../Features/GroupSlice";
 import useDispatchHook from "../customHooks/useDispatchHook";
 import useSelectorHook from "../customHooks/useSelectorHook";
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import store from "../APP/store";
 
 export default function CreateGroup() {
@@ -51,11 +52,11 @@ export default function CreateGroup() {
         setCanSubmit(false);
       }
     }
-  }, [GN, message, file, selected]);
+  }, [GN, message, file, selected, canSubmit]);
 
   const dispatch = useDispatchHook();
 
-  const onSubmitHandler = (e: HTMLFormElement) => {
+  const onSubmitHandler = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const FD = new FormData();
     if (GN != "" && message != "" && file != null && selected.length > 0) {
@@ -77,7 +78,7 @@ export default function CreateGroup() {
 
   return (
     <>
-      <Dialog open={openCreateModel}>
+      <Dialog handler={() => {}} open={openCreateModel}>
         <DialogHeader>Create a Group</DialogHeader>
         <DialogBody>
           <form onSubmit={onSubmitHandler} className="flex flex-col gap-2">
@@ -86,12 +87,14 @@ export default function CreateGroup() {
               required
               value={GN}
               onChange={(e) => setGN(e.target.value)}
+              crossOrigin="anonymous"
             />
             <Input
               label="First Message"
               required
               value={message}
               onChange={(e) => setMESSAGE(e.target.value)}
+              crossOrigin="anonymous"
             />
             <input
               type="file"

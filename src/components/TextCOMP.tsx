@@ -48,7 +48,10 @@ function TextCOMP({ ele }: { ele: mssgInt }) {
   );
 }
 
-const arePropsEqual = (prevProps, nextProps) => {
+const arePropsEqual = (
+  prevProps: { ele: mssgInt },
+  nextProps: { ele: mssgInt }
+) => {
   return prevProps.ele.mssgId === nextProps.ele.mssgId;
 };
 

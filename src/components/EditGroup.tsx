@@ -119,7 +119,7 @@ export default function EditGroup() {
     }
   }, [GN, canSubmit, file, groupMembers, selected]);
 
-  const onSubmitHandler = (e: HTMLFormElement) => {
+  const onSubmitHandler = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const FD = new FormData();
     const load = typeof file == "string" ? new File([""], "empty.txt") : file;
@@ -139,16 +139,17 @@ export default function EditGroup() {
   };
 
   const deleteHandler = () => {
-    dispatch(deleteGroup());
+    dispatch(deleteGroup({}));
   };
 
   return (
     <>
-      <Dialog open={openEditGroupModel}>
+      <Dialog handler={() => {}} open={openEditGroupModel}>
         <DialogHeader>UPDATE GROUP</DialogHeader>
         <DialogBody>
           <form onSubmit={onSubmitHandler} className="flex flex-col gap-2">
             <Input
+              crossOrigin="anonymous"
               disabled={switchState}
               label="Group Name"
               required
@@ -174,7 +175,6 @@ export default function EditGroup() {
               Selected Image Name : {typeof file != "string" ? file?.name : ""}
             </Typography>
             <Button
-              size="small"
               disabled={typeof file != "object" || switchState}
               onClick={() => setFILE("")}
             >
@@ -218,6 +218,7 @@ export default function EditGroup() {
           <div className="h-[2px] bg-black mt-[20px] mb-[10px]"></div>
           <div className="mt-4 flex flex-col items-center gap-4">
             <Switch
+              crossOrigin="anonymous"
               color="red"
               onChange={() => setSwitchState((switchState) => !switchState)}
               label={

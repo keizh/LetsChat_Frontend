@@ -70,7 +70,7 @@ export default function ChatPage() {
             <Button
               onClick={() => {
                 dispatch(updateOpenCreateModel(true));
-                dispatch(fetchedFriendsToMakeGroup());
+                dispatch(fetchedFriendsToMakeGroup({}));
               }}
               color="green"
             >
@@ -156,7 +156,10 @@ true ? `block fixed inset-0 m-2  z-40` : `hidden`
         {ActiveChat && <ChatBox />}
       </section>
       {dontJumpToNextChatWithoutLeaveingCurrentChat && (
-        <Dialog open={dontJumpToNextChatWithoutLeaveingCurrentChat}>
+        <Dialog
+          handler={() => {}}
+          open={dontJumpToNextChatWithoutLeaveingCurrentChat}
+        >
           <DialogBody>click EXIT CHAT and then move on to next chat</DialogBody>
           <DialogFooter>
             <Button

@@ -134,8 +134,8 @@ function ChatBox() {
   };
 
   const editHandler = () => {
-    dispatch(fetchGroupMembers());
-    dispatch(fetchedFriendsToMakeGroup());
+    dispatch(fetchGroupMembers({}));
+    dispatch(fetchedFriendsToMakeGroup({}));
     dispatch(updateOpenGroupEditState(true));
   };
 
@@ -200,7 +200,7 @@ function ChatBox() {
               value={text}
               onChange={(e) => setText(e.target.value)}
               label="text"
-              className=""
+              crossOrigin="anonymous"
             />
           </div>
           <div className=" w-[100%] space-between sm:w-fit flex gap-2 ">

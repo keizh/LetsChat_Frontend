@@ -1,4 +1,9 @@
-import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
+import {
+  createAsyncThunk,
+  createSlice,
+  PayloadAction,
+  SerializedError,
+} from "@reduxjs/toolkit";
 import { ONE2ONEResponseInterface, mssgInt } from "../types";
 import store from "../APP/store";
 
@@ -43,6 +48,7 @@ const initialState: {
   hasMore: false,
   messagesRecieved: 0,
   messagesDeleted: 0,
+  admin: "",
 };
 
 export const fetchChatHistory = createAsyncThunk<
@@ -243,12 +249,17 @@ const ACTIVECHATslice = createSlice({
         fetchChatHistory.rejected,
         (
           state,
-          action: ReturnType<typeof fetchChatHistory.rejected> & {
-            payload: string;
-          }
+          action: PayloadAction<
+            string | undefined,
+            string,
+            unknown,
+            SerializedError
+          >
         ) => {
           state.status = "error";
-          state.error = action.payload;
+          state.error = action.payload
+            ? action.payload
+            : "Error at fetchChatHistory.rejected";
           state.activeChatloading = false;
         }
       );
@@ -266,12 +277,17 @@ const ACTIVECHATslice = createSlice({
         postFiles.rejected,
         (
           state,
-          action: ReturnType<typeof postFiles.rejected> & {
-            payload: string;
-          }
+          action: PayloadAction<
+            string | undefined,
+            string,
+            unknown,
+            SerializedError
+          >
         ) => {
           state.status = "error";
-          state.error = action.payload;
+          state.error = action.payload
+            ? action.payload
+            : "Error at postFiles.rejected";
           state.fileUploadLoadState = false;
         }
       );
@@ -287,12 +303,18 @@ const ACTIVECHATslice = createSlice({
         deleteMessageASYNC.rejected,
         (
           state,
-          action: ReturnType<typeof deleteMessageASYNC.rejected> & {
-            payload: string;
-          }
+          action: PayloadAction<
+            string | undefined,
+            string,
+            unknown,
+            SerializedError
+          >
         ) => {
           state.status = "error";
-          state.error = action.payload;
+          state.error =
+            action.payload != undefined
+              ? action.payload
+              : "Error at deleteMessageASYNC.rejected, ";
         }
       );
   },

@@ -53,7 +53,7 @@ const router = createBrowserRouter([
       {
         path: "/user/auth/chat",
         loader: (): null => {
-          store.dispatch(fetchUserActiveChatsLastAccessTime());
+          store.dispatch(fetchUserActiveChatsLastAccessTime({}));
           return null;
         },
         element: (
